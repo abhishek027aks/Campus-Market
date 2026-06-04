@@ -20,23 +20,38 @@
 </nav>
 
 <div class="form-container">
+
     <h2>Sell Your Product</h2>
 
-    <form>
+    <form action="../backend/add-product.php" method="POST">
 
-        <input type="text" placeholder="Product Name" required>
+        <input type="text"
+               name="title"
+               placeholder="Product Name"
+               required>
 
-        <input type="number" placeholder="Price" required>
+        <input type="number"
+               name="price"
+               placeholder="Price"
+               required>
 
-        <input type="text" placeholder="Category" required>
+        <input type="text"
+               name="category"
+               placeholder="Category"
+               required>
 
-        <textarea placeholder="Product Description" rows="5"></textarea>
+        <textarea
+            name="description"
+            placeholder="Product Description"
+            rows="5"></textarea>
 
-        <input type="file">
-
-        <button type="submit">Upload Product</button>
+        <button type="submit"
+                name="add_product">
+            Upload Product
+        </button>
 
     </form>
+
 </div>
 
 <footer>
