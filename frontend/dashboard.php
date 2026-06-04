@@ -10,15 +10,42 @@ if(!isset($_SESSION['user_id'])){
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dashboard</title>
+    <title>Dashboard - Campus Market</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<h1>Welcome <?php echo $_SESSION['fullname']; ?></h1>
+<div class="form-container">
 
-<p>Login Successful</p>
+    <h1>Welcome <?php echo $_SESSION['fullname']; ?></h1>
 
-<a href="../backend/logout.php">Logout</a>
+    <p>Login Successful ✅</p>
+
+    <br>
+
+    <a href="products.php">
+        <button>View Products</button>
+    </a>
+
+    <br><br>
+
+    <a href="sell.html">
+        <button>Sell Product</button>
+    </a>
+
+    <br><br>
+
+    <a href="my-products.php">
+        <button>My Products</button>
+    </a>
+
+    <br><br>
+
+    <a href="../backend/logout.php">
+        <button>Logout</button>
+    </a>
+
+</div>
 
 </body>
 </html>

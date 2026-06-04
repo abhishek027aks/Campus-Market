@@ -13,7 +13,7 @@
 
     <ul>
         <li><a href="index.html">Home</a></li>
-        <li><a href="products.html">Products</a></li>
+        <li><a href="products.php">Products</a></li>
         <li><a href="sell.html">Sell</a></li>
         <li><a href="login.html">Login</a></li>
     </ul>
@@ -23,7 +23,9 @@
 
     <h2>Sell Your Product</h2>
 
-    <form action="../backend/add-product.php" method="POST">
+    <form action="../backend/add-product.php"
+          method="POST"
+          enctype="multipart/form-data">
 
         <input type="text"
                name="title"
@@ -35,15 +37,14 @@
                placeholder="Price"
                required>
 
-        <input type="text"
-               name="category"
-               placeholder="Category"
-               required>
-
         <textarea
             name="description"
             placeholder="Product Description"
             rows="5"></textarea>
+
+        <input type="file"
+               name="image"
+               required>
 
         <button type="submit"
                 name="add_product">
