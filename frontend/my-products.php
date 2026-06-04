@@ -49,6 +49,12 @@ while($row = mysqli_fetch_assoc($result)){
 
     <br>
 
+    <a href="edit-product.php?id=<?php echo $row['id']; ?>">
+        <button>Edit Product</button>
+    </a>
+
+    <br><br>
+
     <a href="../backend/delete-product.php?id=<?php echo $row['id']; ?>">
         <button>Delete Product</button>
     </a>
