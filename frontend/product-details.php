@@ -12,26 +12,25 @@ $sql = "SELECT products.*, users.fullname, users.email
         JOIN users ON products.seller_id = users.id
         WHERE products.id = $id";
 
-$result = mysqli_query($conn, $sql);
-
-if(!$result){
-    die("Query Error: " . mysqli_error($conn));
-}
+$result = mysqli_query($conn,$sql);
 
 $product = mysqli_fetch_assoc($result);
 
 if(!$product){
     die("Product Not Found");
 }
+
+$fileType = strtolower($product['file_type']);
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title><?php echo $product['title']; ?> - Campus Market</title>
+<title><?php echo $product['title']; ?></title>
 
 <link rel="stylesheet" href="css/style.css">
 
@@ -39,61 +38,72 @@ if(!$product){
 
 body{
     background:#f4f7fc;
-    font-family:Arial, sans-serif;
+    font-family:Arial;
 }
 
 .product-box{
-    width:550px;
-    margin:50px auto;
+    width:800px;
+    margin:40px auto;
     background:white;
     padding:25px;
     border-radius:12px;
-    box-shadow:0 0 10px rgba(0,0,0,0.1);
-    text-align:center;
+    box-shadow:0 0 10px rgba(0,0,0,.1);
 }
 
-.product-box img{
-    width:320px;
+.preview{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.preview img{
+    width:400px;
     max-width:100%;
     border-radius:10px;
-    margin-bottom:15px;
 }
 
-.product-box h2{
-    margin-bottom:10px;
+.preview video{
+    width:100%;
+    border-radius:10px;
 }
 
-.product-box p{
-    color:#555;
+iframe{
+    width:100%;
+    height:600px;
+    border:none;
+    border-radius:10px;
 }
 
 .price{
     color:#0d6efd;
-    font-size:28px;
+    font-size:30px;
     font-weight:bold;
 }
 
-.seller{
-    margin-top:15px;
-    padding:10px;
+.info-box{
     background:#f8f9fa;
-    border-radius:8px;
+    padding:15px;
+    border-radius:10px;
+    margin-top:15px;
 }
 
 .btn{
     display:inline-block;
-    padding:12px 20px;
-    margin:10px 5px;
+    padding:12px 18px;
     border-radius:6px;
     text-decoration:none;
     color:white;
+    margin:5px;
 }
 
-.contact-btn{
-    background:#28a745;
+.download{
+    background:#6f42c1;
 }
 
-.back-btn{
+.contact{
+    background:#198754;
+}
+
+.back{
     background:#0d6efd;
 }
 
@@ -104,47 +114,137 @@ body{
 
 <div class="product-box">
 
-    <?php if(!empty($product['image'])){ ?>
+<div class="preview">
 
-        <img src="uploads/<?php echo $product['image']; ?>">
+<?php
 
-    <?php } ?>
+if($fileType=="pdf"){
 
-    <h2><?php echo $product['title']; ?></h2>
+    if(!empty($product['preview_image'])){
+        echo '<img src="uploads/'.$product['preview_image'].'">';
+    }else{
+        echo '<img src="images/pdf.png" width="180">';
+    }
 
-    <p><?php echo $product['description']; ?></p>
+    echo '<br><br>';
 
-    <div class="price">
-        ₹<?php echo $product['price']; ?>
-    </div>
+    echo '<iframe src="uploads/'.$product['image'].'"></iframe>';
+}
 
-    <div class="seller">
+elseif($fileType=="mp4"){
 
-        <h3>Seller Information</h3>
+    echo '
+    <video controls>
+        <source src="uploads/'.$product['image'].'" type="video/mp4">
+    </video>';
+}
 
-        <p>
-            <strong>Name:</strong>
-            <?php echo $product['fullname']; ?>
-        </p>
+elseif(
+    $fileType=="jpg" ||
+    $fileType=="jpeg" ||
+    $fileType=="png" ||
+    $fileType=="image"
+){
 
-        <p>
-            <strong>Email:</strong>
-            <?php echo $product['email']; ?>
-        </p>
+    echo '
+    <img src="uploads/'.$product['image'].'">';
+}
 
-    </div>
+elseif($fileType=="docx"){
 
-    <a
-    href="mailto:<?php echo $product['email']; ?>"
-    class="btn contact-btn">
-        Contact Seller
-    </a>
+    if(!empty($product['preview_image'])){
+        echo '<img src="uploads/'.$product['preview_image'].'">';
+    }else{
+        echo '<img src="images/docx.png" width="180">';
+    }
+}
 
-    <a
-    href="products.php"
-    class="btn back-btn">
-        Back To Products
-    </a>
+elseif($fileType=="pptx"){
+
+    if(!empty($product['preview_image'])){
+        echo '<img src="uploads/'.$product['preview_image'].'">';
+    }else{
+        echo '<img src="images/ppt.png" width="180">';
+    }
+}
+
+else{
+
+    echo '<img src="images/file.png" width="180">';
+}
+
+?>
+
+</div>
+
+<h2><?php echo $product['title']; ?></h2>
+
+<p><?php echo $product['description']; ?></p>
+
+<div class="price">
+₹<?php echo $product['price']; ?>
+</div>
+
+<div class="info-box">
+
+<p>
+<b>Category:</b>
+<?php echo $product['category']; ?>
+</p>
+
+<p>
+<b>Status:</b>
+<?php echo $product['status']; ?>
+</p>
+
+<p>
+<b>File Type:</b>
+<?php echo strtoupper($product['file_type']); ?>
+</p>
+
+<p>
+<b>Uploaded On:</b>
+<?php echo date("d M Y",strtotime($product['created_at'])); ?>
+</p>
+
+</div>
+
+<div class="info-box">
+
+<h3>Seller Information</h3>
+
+<p>
+<b>Name:</b>
+<?php echo $product['fullname']; ?>
+</p>
+
+<p>
+<b>Email:</b>
+<?php echo $product['email']; ?>
+</p>
+
+</div>
+
+<br>
+
+<a
+class="btn download"
+href="uploads/<?php echo $product['image']; ?>"
+download>
+Download File
+</a>
+
+<a
+class="btn contact"
+href="mailto:<?php echo $product['email']; ?>">
+Contact Seller
+</a>
+
+<a
+class="btn back"
+href="products.php">
+Back To Products
+</a>
 
 </div>
 

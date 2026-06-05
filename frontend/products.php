@@ -1,3 +1,4 @@
+```php
 <?php
 include "../backend/config.php";
 
@@ -10,7 +11,10 @@ if(isset($_GET['search']) && !empty($_GET['search'])){
 
     $search = mysqli_real_escape_string($conn,$_GET['search']);
 
-    $sql .= " AND (title LIKE '%$search%' OR description LIKE '%$search%')";
+    $sql .= " AND (
+        title LIKE '%$search%'
+        OR description LIKE '%$search%'
+    )";
 }
 
 if(isset($_GET['category']) && !empty($_GET['category'])){
@@ -74,20 +78,15 @@ h2{
     background:white;
     padding:15px;
     border-radius:10px;
-    box-shadow:0 0 10px rgba(0,0,0,0.1);
+    box-shadow:0 0 10px rgba(0,0,0,.1);
     text-align:center;
 }
 
-.card img{
+.product-img{
     width:240px;
     height:170px;
     object-fit:cover;
     border-radius:10px;
-}
-
-.file-icon{
-    font-size:80px;
-    margin:20px 0;
 }
 
 .price{
@@ -144,46 +143,41 @@ h2{
 
 <form method="GET">
 
-    <input
-        type="text"
-        name="search"
-        placeholder="Search Product"
-        value="<?php echo $search; ?>">
+<input
+type="text"
+name="search"
+placeholder="Search Product"
+value="<?php echo $search; ?>">
 
-    <select name="category">
+<select name="category">
 
-        <option value="">All Categories</option>
+<option value="">All Categories</option>
 
-        <option value="Books"
-        <?php if($category=="Books") echo "selected"; ?>>
-        Books
-        </option>
+<option value="Books" <?php if($category=="Books") echo "selected"; ?>>
+Books
+</option>
 
-        <option value="Electronics"
-        <?php if($category=="Electronics") echo "selected"; ?>>
-        Electronics
-        </option>
+<option value="Electronics" <?php if($category=="Electronics") echo "selected"; ?>>
+Electronics
+</option>
 
-        <option value="Notes"
-        <?php if($category=="Notes") echo "selected"; ?>>
-        Notes
-        </option>
+<option value="Notes" <?php if($category=="Notes") echo "selected"; ?>>
+Notes
+</option>
 
-        <option value="Accessories"
-        <?php if($category=="Accessories") echo "selected"; ?>>
-        Accessories
-        </option>
+<option value="Accessories" <?php if($category=="Accessories") echo "selected"; ?>>
+Accessories
+</option>
 
-        <option value="Others"
-        <?php if($category=="Others") echo "selected"; ?>>
-        Others
-        </option>
+<option value="Others" <?php if($category=="Others") echo "selected"; ?>>
+Others
+</option>
 
-    </select>
+</select>
 
-    <button type="submit">
-        Filter
-    </button>
+<button type="submit">
+Filter
+</button>
 
 </form>
 
@@ -201,82 +195,122 @@ while($row = mysqli_fetch_assoc($result)){
 
 $file = strtolower($row['file_type']);
 
-if($file=="jpg" || $file=="jpeg" || $file=="png"){
+if(!empty($row['preview_image'])){
+
 ?>
 
-    <img src="uploads/<?php echo $row['image']; ?>">
+<img
+src="uploads/<?php echo $row['preview_image']; ?>"
+class="product-img">
 
 <?php
+
+}
+elseif(
+    $file=="image" ||
+    $file=="jpg" ||
+    $file=="jpeg" ||
+    $file=="png"
+){
+
+?>
+
+<img
+src="uploads/<?php echo $row['image']; ?>"
+class="product-img">
+
+<?php
+
 }
 elseif($file=="pdf"){
+
 ?>
 
-    <div class="file-icon">📕</div>
+<img
+src="images/pdf.png"
+class="product-img">
 
 <?php
+
 }
 elseif($file=="docx"){
+
 ?>
 
-    <div class="file-icon">📘</div>
+<img
+src="images/docx.png"
+class="product-img">
 
 <?php
+
 }
 elseif($file=="pptx"){
+
 ?>
 
-    <div class="file-icon">📙</div>
+<img
+src="images/ppt.png"
+class="product-img">
 
 <?php
+
 }
 elseif($file=="mp4"){
+
 ?>
 
-    <div class="file-icon">🎥</div>
+<img
+src="images/video.png"
+class="product-img">
 
 <?php
+
 }
 else{
+
 ?>
 
-    <div class="file-icon">📁</div>
+<img
+src="images/file.png"
+class="product-img">
 
 <?php
+
 }
 ?>
 
-    <h3><?php echo $row['title']; ?></h3>
+<h3><?php echo $row['title']; ?></h3>
 
-    <p><?php echo $row['description']; ?></p>
+<p><?php echo $row['description']; ?></p>
 
-    <div class="price">
-        ₹<?php echo $row['price']; ?>
-    </div>
+<div class="price">
+₹<?php echo $row['price']; ?>
+</div>
 
-    <br>
+<br>
 
-    <span class="badge category">
-        <?php echo $row['category']; ?>
-    </span>
+<span class="badge category">
+<?php echo $row['category']; ?>
+</span>
 
-    <?php
-    if($row['status']=="Available"){
-        echo '<span class="badge available">Available</span>';
-    }else{
-        echo '<span class="badge sold">Sold</span>';
-    }
-    ?>
+<?php
+if($row['status']=="Available"){
+    echo '<span class="badge available">Available</span>';
+}else{
+    echo '<span class="badge sold">Sold</span>';
+}
+?>
 
-    <div class="date">
-        Added:
-        <?php echo date("d M Y",strtotime($row['created_at'])); ?>
-    </div>
+<div class="date">
+Added:
+<?php echo date("d M Y",strtotime($row['created_at'])); ?>
+</div>
 
-    <a
-    class="btn"
-    href="product-details.php?id=<?php echo $row['id']; ?>">
-        View Details
-    </a>
+<a
+class="btn"
+href="product-details.php?id=<?php echo $row['id']; ?>">
+View Details
+</a>
 
 </div>
 
@@ -288,3 +322,4 @@ else{
 
 </body>
 </html>
+```
