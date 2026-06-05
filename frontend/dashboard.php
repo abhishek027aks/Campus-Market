@@ -41,6 +41,12 @@ if(!isset($_SESSION['user_id'])){
 
     <br><br>
 
+    <a href="profile.php">
+        <button>My Profile</button>
+    </a>
+
+    <br><br>
+
     <a href="../backend/logout.php">
         <button>Logout</button>
     </a>

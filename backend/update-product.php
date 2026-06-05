@@ -17,16 +17,21 @@ if(isset($_POST['update_product'])){
             description='$description'
             WHERE id='$id'";
 
-    if(mysqli_query($conn,$sql)){
+    if(mysqli_query($conn, $sql)){
 
         header("Location: ../frontend/my-products.php");
         exit();
 
     }else{
 
-        echo mysqli_error($conn);
+        echo "Database Error: " . mysqli_error($conn);
 
     }
+
+}else{
+
+    echo "Invalid Request";
+
 }
 
 ?>
