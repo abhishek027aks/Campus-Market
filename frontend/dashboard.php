@@ -47,6 +47,12 @@ if(!isset($_SESSION['user_id'])){
 
     <br><br>
 
+    <a href="my-wishlist.php">
+        <button>My Wishlist</button>
+    </a>
+
+    <br><br>
+
     <a href="../backend/logout.php">
         <button>Logout</button>
     </a>

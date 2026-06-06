@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Sell Product - Campus Market</title>
 
 <link rel="stylesheet" href="css/style.css">
@@ -11,93 +13,172 @@
 <body>
 
 <nav>
-    <div class="logo">🎓 Campus Market</div>
 
-    <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="products.php">Products</a></li>
-        <li><a href="sell.html">Sell</a></li>
-        <li><a href="login.html">Login</a></li>
-    </ul>
+<div class="logo">
+🎓 Campus Market
+</div>
+
+<ul>
+<li><a href="index.html">Home</a></li>
+<li><a href="products.php">Products</a></li>
+<li><a href="sell.html">Sell</a></li>
+<li><a href="login.html">Login</a></li>
+</ul>
+
 </nav>
 
 <div class="form-container">
 
-    <h2>Sell Your Product</h2>
+<h2>Sell Your Product</h2>
 
-    <form
-        action="../backend/add-product.php"
-        method="POST"
-        enctype="multipart/form-data">
+<form
+action="../backend/add-product.php"
+method="POST"
+enctype="multipart/form-data">
 
-        <input
-            type="text"
-            name="title"
-            placeholder="Product Name"
-            required>
+<input
+type="text"
+name="title"
+placeholder="Product Name"
+required>
 
-        <input
-            type="number"
-            step="0.01"
-            name="price"
-            placeholder="Price"
-            required>
+<input
+type="number"
+step="0.01"
+name="price"
+placeholder="Price"
+required>
 
-        <textarea
-            name="description"
-            placeholder="Product Description"
-            rows="5"></textarea>
+<textarea
+name="description"
+placeholder="Product Description"
+rows="5"
+required></textarea>
 
-        <select name="category" required>
-            <option value="">Select Category</option>
-            <option value="Books">Books</option>
-            <option value="Electronics">Electronics</option>
-            <option value="Notes">Notes</option>
-            <option value="Accessories">Accessories</option>
-            <option value="Others">Others</option>
-        </select>
+<select
+name="category"
+required>
 
-        <br><br>
+<option value="">
+Select Category
+</option>
 
-        <select name="status" required>
-            <option value="Available">Available</option>
-            <option value="Sold">Sold</option>
-        </select>
+<option value="Books">
+Books
+</option>
 
-        <br><br>
+<option value="Electronics">
+Electronics
+</option>
 
-        <label><b>Main File</b></label>
+<option value="Notes">
+Notes
+</option>
 
-        <input
-            type="file"
-            name="file"
-            required>
+<option value="Accessories">
+Accessories
+</option>
 
-        <br><br>
+<option value="Others">
+Others
+</option>
 
-        <label><b>Preview Image (Thumbnail)</b></label>
+</select>
 
-        <input
-            type="file"
-            name="preview_image"
-            accept="image/*"
-            required>
+<br><br>
 
-        <br><br>
+<input
+type="text"
+name="other_category"
+id="otherCategory"
+placeholder="Specify Category"
+style="display:none;">
 
-        <button
-            type="submit"
-            name="add_product">
-            Upload Product
-        </button>
+<select
+name="status"
+required>
 
-    </form>
+<option value="Available">
+Available
+</option>
+
+<option value="Sold">
+Sold
+</option>
+
+</select>
+
+<br><br>
+
+<label>
+<b>Main File</b>
+</label>
+
+<input
+type="file"
+name="file"
+required>
+
+<br><br>
+
+<label>
+<b>Preview Image (Thumbnail)</b>
+</label>
+
+<input
+type="file"
+name="preview_image"
+accept="image/*"
+required>
+
+<br><br>
+
+<label>
+<b>Preview File (Optional)</b>
+</label>
+
+<input
+type="file"
+name="preview_file"
+accept=".pdf,.mp4">
+
+<br><br>
+
+<button
+type="submit"
+name="add_product">
+
+Upload Product
+
+</button>
+
+</form>
 
 </div>
 
 <footer>
-    <p>© 2026 Campus Market | Developed by Abhishek Kumar Singh</p>
+
+<p>
+© 2026 Campus Market |
+Developed by Abhishek Kumar Singh
+</p>
+
 </footer>
+
+<script>
+const categorySelect = document.querySelector('select[name="category"]');
+const otherCategory = document.getElementById('otherCategory');
+
+categorySelect.addEventListener('change', function(){
+    const showOther = this.value === 'Others';
+    otherCategory.style.display = showOther ? 'block' : 'none';
+    otherCategory.required = showOther;
+
+    if(!showOther){
+        otherCategory.value = '';
+    }
+});
+</script>
 
 </body>
 </html>

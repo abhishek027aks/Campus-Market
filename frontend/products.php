@@ -1,4 +1,3 @@
-```php
 <?php
 include "../backend/config.php";
 
@@ -8,7 +7,6 @@ $category = "";
 $sql = "SELECT * FROM products WHERE 1=1";
 
 if(isset($_GET['search']) && !empty($_GET['search'])){
-
     $search = mysqli_real_escape_string($conn,$_GET['search']);
 
     $sql .= " AND (
@@ -18,9 +16,7 @@ if(isset($_GET['search']) && !empty($_GET['search'])){
 }
 
 if(isset($_GET['category']) && !empty($_GET['category'])){
-
     $category = mysqli_real_escape_string($conn,$_GET['category']);
-
     $sql .= " AND category='$category'";
 }
 
@@ -33,12 +29,14 @@ $result = mysqli_query($conn,$sql);
 <html>
 <head>
 
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Products - Campus Market</title>
 
 <link rel="stylesheet" href="css/style.css">
 
 <style>
-
 body{
     background:#f4f7fc;
     font-family:Arial;
@@ -122,6 +120,12 @@ h2{
     margin-top:10px;
 }
 
+.views{
+    color:#555;
+    font-size:14px;
+    margin-top:8px;
+}
+
 .btn{
     display:inline-block;
     padding:10px 15px;
@@ -131,7 +135,6 @@ h2{
     border-radius:5px;
     margin-top:10px;
 }
-
 </style>
 
 </head>
@@ -147,7 +150,7 @@ h2{
 type="text"
 name="search"
 placeholder="Search Product"
-value="<?php echo $search; ?>">
+value="<?php echo htmlspecialchars($search); ?>">
 
 <select name="category">
 
@@ -187,24 +190,21 @@ Filter
 
 <?php
 while($row = mysqli_fetch_assoc($result)){
+    $file = strtolower($row['file_type']);
 ?>
 
 <div class="card">
 
 <?php
-
-$file = strtolower($row['file_type']);
-
 if(!empty($row['preview_image'])){
-
 ?>
 
 <img
-src="uploads/<?php echo $row['preview_image']; ?>"
+src="uploads/<?php echo htmlspecialchars($row['preview_image']); ?>"
+alt="<?php echo htmlspecialchars($row['title']); ?>"
 class="product-img">
 
 <?php
-
 }
 elseif(
     $file=="image" ||
@@ -212,85 +212,79 @@ elseif(
     $file=="jpeg" ||
     $file=="png"
 ){
-
 ?>
 
 <img
-src="uploads/<?php echo $row['image']; ?>"
+src="uploads/<?php echo htmlspecialchars($row['image']); ?>"
+alt="<?php echo htmlspecialchars($row['title']); ?>"
 class="product-img">
 
 <?php
-
 }
 elseif($file=="pdf"){
-
 ?>
 
 <img
 src="images/pdf.png"
+alt="PDF file"
 class="product-img">
 
 <?php
-
 }
 elseif($file=="docx"){
-
 ?>
 
 <img
 src="images/docx.png"
+alt="DOCX file"
 class="product-img">
 
 <?php
-
 }
 elseif($file=="pptx"){
-
 ?>
 
 <img
 src="images/ppt.png"
+alt="PPTX file"
 class="product-img">
 
 <?php
-
 }
 elseif($file=="mp4"){
-
 ?>
 
 <img
 src="images/video.png"
+alt="Video file"
 class="product-img">
 
 <?php
-
 }
 else{
-
 ?>
 
 <img
 src="images/file.png"
+alt="File"
 class="product-img">
 
 <?php
-
 }
 ?>
 
-<h3><?php echo $row['title']; ?></h3>
+<h3><?php echo htmlspecialchars($row['title']); ?></h3>
 
-<p><?php echo $row['description']; ?></p>
+<p><?php echo htmlspecialchars($row['description']); ?></p>
 
 <div class="price">
-₹<?php echo $row['price']; ?>
+Rs. <?php echo htmlspecialchars($row['price']); ?>
 </div>
 
 <br>
 
 <span class="badge category">
-<?php echo $row['category']; ?>
+<?php echo htmlspecialchars($row['category']); ?>
 </span>
 
 <?php
@@ -306,9 +300,13 @@ Added:
 <?php echo date("d M Y",strtotime($row['created_at'])); ?>
 </div>
 
+<div class="views">
+Views: <?php echo (int)$row['views']; ?>
+</div>
+
 <a
 class="btn"
-href="product-details.php?id=<?php echo $row['id']; ?>">
+href="product-details.php?id=<?php echo (int)$row['id']; ?>">
 View Details
 </a>
 
@@ -322,4 +320,3 @@ View Details
 
 </body>
 </html>
-```
