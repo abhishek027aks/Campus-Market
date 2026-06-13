@@ -40,6 +40,24 @@ if(isset($_SESSION['user_id'])){
     $wishlist_result = mysqli_query($conn, $wishlist_sql);
     $isWishlisted = $wishlist_result && mysqli_num_rows($wishlist_result) > 0;
 }
+
+$review_stats_sql = "SELECT
+                     COUNT(*) AS total_reviews,
+                     COALESCE(AVG(rating), 0) AS average_rating
+                     FROM product_reviews
+                     WHERE product_id='$id'";
+
+$review_stats = mysqli_fetch_assoc(mysqli_query($conn, $review_stats_sql));
+$averageRating = round((float)$review_stats['average_rating'], 1);
+$totalReviews = (int)$review_stats['total_reviews'];
+
+$reviews_sql = "SELECT product_reviews.*, users.fullname
+                FROM product_reviews
+                JOIN users ON product_reviews.user_id = users.id
+                WHERE product_reviews.product_id='$id'
+                ORDER BY product_reviews.id DESC";
+
+$reviews_result = mysqli_query($conn, $reviews_sql);
 ?>
 
 <!DOCTYPE html>
@@ -125,6 +143,10 @@ iframe{
     background:#dc3545;
 }
 
+.chat{
+    background:#fd7e14;
+}
+
 .seller-link{
     color:#0d6efd;
     font-weight:bold;
@@ -137,6 +159,60 @@ iframe{
     border-radius:20px;
     background:#198754;
     color:white;
+    font-size:13px;
+}
+
+.rating-summary{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    flex-wrap:wrap;
+    margin:10px 0;
+}
+
+.stars{
+    color:#ffc107;
+    font-size:22px;
+    letter-spacing:1px;
+}
+
+.review-form label{
+    display:block;
+    font-weight:bold;
+    margin-top:12px;
+}
+
+.review-form select,
+.review-form textarea{
+    width:100%;
+    padding:12px;
+    margin-top:8px;
+    border:1px solid #ddd;
+    border-radius:6px;
+}
+
+.review-form textarea{
+    min-height:100px;
+    resize:vertical;
+}
+
+.review{
+    background:white;
+    border:1px solid #e5e7eb;
+    border-radius:8px;
+    padding:14px;
+    margin-top:12px;
+}
+
+.review-head{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+.review-date{
+    color:#666;
     font-size:13px;
 }
 </style>
@@ -292,11 +368,25 @@ class="btn wishlist"
 href="../backend/toggle-wishlist.php?product_id=<?php echo (int)$product['id']; ?>">
 <?php echo $isWishlisted ? "Remove Wishlist" : "Add To Wishlist"; ?>
 </a>
+
+<?php if((int)$_SESSION['user_id'] != (int)$product['seller_id']){ ?>
+<a
+class="btn chat"
+href="chat.php?product_id=<?php echo (int)$product['id']; ?>">
+Chat With Seller
+</a>
+<?php } ?>
 <?php }else{ ?>
 <a
 class="btn wishlist"
 href="login.html">
 Login To Wishlist
+</a>
+
+<a
+class="btn chat"
+href="login.html">
+Login To Chat
 </a>
 <?php } ?>
 
@@ -318,6 +408,88 @@ class="btn back"
 href="products.php">
 Back To Products
 </a>
+
+<div class="info-box" id="reviews">
+    <h3>Ratings & Comments</h3>
+
+    <div class="rating-summary">
+        <span class="stars">
+            <?php
+            for($i = 1; $i <= 5; $i++){
+                echo $i <= round($averageRating) ? "&#9733;" : "&#9734;";
+            }
+            ?>
+        </span>
+        <strong><?php echo $averageRating; ?> / 5</strong>
+        <span>(<?php echo $totalReviews; ?> reviews)</span>
+    </div>
+
+    <?php if(isset($_SESSION['user_id'])){ ?>
+        <form
+        class="review-form"
+        action="../backend/add-review.php"
+        method="POST">
+
+            <input
+            type="hidden"
+            name="product_id"
+            value="<?php echo (int)$product['id']; ?>">
+
+            <label>Rating</label>
+            <select name="rating" required>
+                <option value="">Select Rating</option>
+                <option value="5">5 - Excellent</option>
+                <option value="4">4 - Very Good</option>
+                <option value="3">3 - Good</option>
+                <option value="2">2 - Average</option>
+                <option value="1">1 - Poor</option>
+            </select>
+
+            <label>Comment</label>
+            <textarea
+            name="comment"
+            placeholder="Write your review"
+            required></textarea>
+
+            <button
+            type="submit"
+            name="submit_review"
+            class="btn back">
+                Submit Review
+            </button>
+        </form>
+    <?php }else{ ?>
+        <p>
+            <a href="login.html">Login</a>
+            to add rating and comment.
+        </p>
+    <?php } ?>
+
+    <?php if($totalReviews == 0){ ?>
+        <p>No reviews yet.</p>
+    <?php }else{ ?>
+        <?php while($review = mysqli_fetch_assoc($reviews_result)){ ?>
+            <div class="review">
+                <div class="review-head">
+                    <strong><?php echo htmlspecialchars($review['fullname']); ?></strong>
+                    <span class="review-date">
+                        <?php echo date("d M Y", strtotime($review['updated_at'])); ?>
+                    </span>
+                </div>
+
+                <div class="stars">
+                    <?php
+                    for($i = 1; $i <= 5; $i++){
+                        echo $i <= (int)$review['rating'] ? "&#9733;" : "&#9734;";
+                    }
+                    ?>
+                </div>
+
+                <p><?php echo nl2br(htmlspecialchars($review['comment'])); ?></p>
+            </div>
+        <?php } ?>
+    <?php } ?>
+</div>
 
 </div>
 

@@ -4,23 +4,34 @@ include "../backend/config.php";
 $search = "";
 $category = "";
 
-$sql = "SELECT * FROM products WHERE 1=1";
+$sql = "SELECT products.*,
+        COALESCE(review_summary.average_rating, 0) AS average_rating,
+        COALESCE(review_summary.total_reviews, 0) AS total_reviews
+        FROM products
+        LEFT JOIN (
+            SELECT product_id,
+            AVG(rating) AS average_rating,
+            COUNT(*) AS total_reviews
+            FROM product_reviews
+            GROUP BY product_id
+        ) AS review_summary ON products.id = review_summary.product_id
+        WHERE 1=1";
 
 if(isset($_GET['search']) && !empty($_GET['search'])){
     $search = mysqli_real_escape_string($conn,$_GET['search']);
 
     $sql .= " AND (
-        title LIKE '%$search%'
-        OR description LIKE '%$search%'
+        products.title LIKE '%$search%'
+        OR products.description LIKE '%$search%'
     )";
 }
 
 if(isset($_GET['category']) && !empty($_GET['category'])){
     $category = mysqli_real_escape_string($conn,$_GET['category']);
-    $sql .= " AND category='$category'";
+    $sql .= " AND products.category='$category'";
 }
 
-$sql .= " ORDER BY id DESC";
+$sql .= " ORDER BY products.id DESC";
 
 $result = mysqli_query($conn,$sql);
 ?>
@@ -124,6 +135,17 @@ h2{
     color:#555;
     font-size:14px;
     margin-top:8px;
+}
+
+.rating{
+    color:#555;
+    font-size:14px;
+    margin-top:8px;
+}
+
+.stars{
+    color:#ffc107;
+    letter-spacing:1px;
 }
 
 .btn{
@@ -302,6 +324,20 @@ Added:
 
 <div class="views">
 Views: <?php echo (int)$row['views']; ?>
+</div>
+
+<div class="rating">
+<span class="stars">
+<?php
+$cardRating = round((float)$row['average_rating'], 1);
+
+for($i = 1; $i <= 5; $i++){
+    echo $i <= round($cardRating) ? "&#9733;" : "&#9734;";
+}
+?>
+</span>
+<?php echo $cardRating; ?> / 5
+(<?php echo (int)$row['total_reviews']; ?>)
 </div>
 
 <a

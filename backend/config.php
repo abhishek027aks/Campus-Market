@@ -111,4 +111,57 @@ mysqli_query(
         UNIQUE KEY unique_wishlist (user_id, product_id)
     )"
 );
+
+mysqli_query(
+    $conn,
+    "CREATE TABLE IF NOT EXISTS product_reviews (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        product_id INT NOT NULL,
+        rating TINYINT NOT NULL,
+        comment TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_product_review (user_id, product_id)
+    )"
+);
+
+mysqli_query(
+    $conn,
+    "CREATE TABLE IF NOT EXISTS chats (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        product_id INT NOT NULL,
+        buyer_id INT NOT NULL,
+        seller_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_chat (product_id, buyer_id, seller_id)
+    )"
+);
+
+mysqli_query(
+    $conn,
+    "CREATE TABLE IF NOT EXISTS messages (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        chat_id INT NOT NULL,
+        sender_id INT NOT NULL,
+        receiver_id INT NOT NULL,
+        message TEXT NOT NULL,
+        is_read TINYINT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )"
+);
+
+mysqli_query(
+    $conn,
+    "CREATE TABLE IF NOT EXISTS notifications (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        type VARCHAR(50) NOT NULL,
+        title VARCHAR(150) NOT NULL,
+        message TEXT NOT NULL,
+        link VARCHAR(255) DEFAULT '',
+        is_read TINYINT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )"
+);
 ?>
