@@ -89,6 +89,10 @@ h2{
     background:#6f42c1;
 }
 
+.qr-btn{
+    background:#fd7e14;
+}
+
 </style>
 
 </head>
@@ -186,6 +190,12 @@ Download
 class="btn edit-btn"
 href="edit-product.php?id=<?php echo $row['id']; ?>">
 Edit Product
+</a>
+
+<a
+class="btn qr-btn"
+href="product-qr.php?id=<?php echo $row['id']; ?>">
+QR Code
 </a>
 
 <a

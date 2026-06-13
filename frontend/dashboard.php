@@ -54,6 +54,12 @@ $notification_count = mysqli_fetch_assoc(
 
     <br><br>
 
+    <a href="seller-analytics.php">
+        <button>Seller Analytics</button>
+    </a>
+
+    <br><br>
+
     <a href="profile.php">
         <button>My Profile</button>
     </a>
