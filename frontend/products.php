@@ -15,7 +15,7 @@ $sql = "SELECT products.*,
             FROM product_reviews
             GROUP BY product_id
         ) AS review_summary ON products.id = review_summary.product_id
-        WHERE 1=1";
+        WHERE products.approval_status='Approved'";
 
 if(isset($_GET['search']) && !empty($_GET['search'])){
     $search = mysqli_real_escape_string($conn,$_GET['search']);

@@ -166,6 +166,11 @@ src="uploads/<?php echo $row['image']; ?>">
 </p>
 
 <p>
+<b>Approval:</b>
+<?php echo htmlspecialchars($row['approval_status']); ?>
+</p>
+
+<p>
 <b>Type:</b>
 <?php echo strtoupper($row['file_type']); ?>
 </p>

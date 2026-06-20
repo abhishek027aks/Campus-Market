@@ -16,7 +16,9 @@ if(isset($_GET['chat_id'])){
 elseif(isset($_GET['product_id'])){
     $product_id = (int)$_GET['product_id'];
 
-    $product_sql = "SELECT * FROM products WHERE id='$product_id'";
+    $product_sql = "SELECT * FROM products
+                    WHERE id='$product_id'
+                    AND approval_status='Approved'";
     $product_result = mysqli_query($conn, $product_sql);
     $product = mysqli_fetch_assoc($product_result);
 

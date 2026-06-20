@@ -30,7 +30,9 @@ if($comment == ""){
 
 $product_check = mysqli_query(
     $conn,
-    "SELECT id FROM products WHERE id='$product_id'"
+    "SELECT id FROM products
+     WHERE id='$product_id'
+     AND approval_status='Approved'"
 );
 
 if(!$product_check || mysqli_num_rows($product_check) == 0){

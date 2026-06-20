@@ -22,6 +22,10 @@ $approved_count = mysqli_fetch_assoc(
 $products_count = mysqli_fetch_assoc(
     mysqli_query($conn, "SELECT COUNT(*) AS total FROM products")
 );
+
+$pending_products_count = mysqli_fetch_assoc(
+    mysqli_query($conn, "SELECT COUNT(*) AS total FROM products WHERE approval_status='Pending'")
+);
 ?>
 
 <!DOCTYPE html>
@@ -55,7 +59,7 @@ body{
 
 .stats{
     display:grid;
-    grid-template-columns:repeat(4,1fr);
+    grid-template-columns:repeat(5,1fr);
     gap:16px;
     margin-top:22px;
 }
@@ -137,11 +141,16 @@ body{
             <h2><?php echo (int)$products_count['total']; ?></h2>
             <p>Total Products</p>
         </div>
+
+        <div class="stat-card">
+            <h2><?php echo (int)$pending_products_count['total']; ?></h2>
+            <p>Pending Products</p>
+        </div>
     </div>
 
     <div class="actions">
         <a class="admin-btn" href="users.php">Manage Student Verification</a>
-        <a class="admin-btn" href="../frontend/products.php">View Products</a>
+        <a class="admin-btn" href="products.php">Manage Products</a>
     </div>
 </div>
 

@@ -13,6 +13,7 @@ $sql = "SELECT products.*, wishlist.created_at AS saved_at
         FROM wishlist
         JOIN products ON wishlist.product_id = products.id
         WHERE wishlist.user_id='$user_id'
+        AND products.approval_status='Approved'
         ORDER BY wishlist.id DESC";
 
 $result = mysqli_query($conn, $sql);

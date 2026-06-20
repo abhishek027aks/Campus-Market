@@ -37,7 +37,6 @@ if(
 $host = $_SERVER['HTTP_HOST'];
 $basePath = dirname($_SERVER['SCRIPT_NAME']);
 $productUrl = $scheme."://".$host.$basePath."/product-details.php?id=".$id;
-$qrImage = "https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=".urlencode($productUrl);
 ?>
 
 <!DOCTYPE html>
@@ -64,10 +63,17 @@ body{
     text-align:center;
 }
 
-.qr-card img{
+.qr-code{
     width:260px;
     height:260px;
-    margin:20px 0;
+    margin:20px auto;
+}
+
+.qr-code img,
+.qr-code canvas{
+    display:block;
+    width:260px;
+    height:260px;
 }
 
 .url-box{
@@ -98,6 +104,17 @@ body{
 .back{
     background:#6f42c1;
 }
+
+@media print{
+    .qr-actions{
+        display:none;
+    }
+
+    .qr-card{
+        box-shadow:none;
+        margin:0 auto;
+    }
+}
 </style>
 </head>
 <body>
@@ -106,31 +123,52 @@ body{
     <h1>Product QR Code</h1>
     <h3><?php echo htmlspecialchars($product['title']); ?></h3>
 
-    <img
-    src="<?php echo htmlspecialchars($qrImage); ?>"
-    alt="Product QR Code">
+    <div id="productQr" class="qr-code" aria-label="Product QR Code"></div>
 
     <div class="url-box">
         <?php echo htmlspecialchars($productUrl); ?>
     </div>
 
-    <button class="btn print" onclick="window.print();">
-        Print QR
-    </button>
+    <div class="qr-actions">
+        <button class="btn" id="downloadQr" type="button">
+            Download PNG
+        </button>
 
-    <a
-    class="btn"
-    target="_blank"
-    href="<?php echo htmlspecialchars($qrImage); ?>">
-        Open QR Image
-    </a>
+        <button class="btn print" type="button" onclick="window.print();">
+            Print QR
+        </button>
 
-    <a
-    class="btn back"
-    href="my-products.php">
-        My Products
-    </a>
+        <a class="btn back" href="my-products.php">
+            My Products
+        </a>
+    </div>
 </div>
 
+<script src="js/qrcode.min.js"></script>
+<script>
+const productUrl = <?php echo json_encode($productUrl, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+const productTitle = <?php echo json_encode($product['title'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
+const qrContainer = document.getElementById("productQr");
+
+new QRCode(qrContainer, {
+    text: productUrl,
+    width: 260,
+    height: 260,
+    colorDark: "#111827",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.H
+});
+
+document.getElementById("downloadQr").addEventListener("click", function(){
+    const canvas = qrContainer.querySelector("canvas");
+    const image = qrContainer.querySelector("img");
+    const link = document.createElement("a");
+    const safeTitle = productTitle.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "product";
+
+    link.download = safeTitle + "-qr.png";
+    link.href = canvas ? canvas.toDataURL("image/png") : image.src;
+    link.click();
+});
+</script>
 </body>
 </html>

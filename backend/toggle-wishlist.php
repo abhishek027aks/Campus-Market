@@ -33,6 +33,17 @@ if($check_result && mysqli_num_rows($check_result) > 0){
          AND product_id='$product_id'"
     );
 }else{
+    $product_check = mysqli_query(
+        $conn,
+        "SELECT id FROM products
+         WHERE id='$product_id'
+         AND approval_status='Approved'"
+    );
+
+    if(!$product_check || mysqli_num_rows($product_check) == 0){
+        die("Product is not available");
+    }
+
     mysqli_query(
         $conn,
         "INSERT INTO wishlist(user_id, product_id)

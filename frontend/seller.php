@@ -17,6 +17,7 @@ if(!$seller){
 
 $product_sql = "SELECT * FROM products
                 WHERE seller_id='$seller_id'
+                AND approval_status='Approved'
                 ORDER BY id DESC";
 
 $product_result = mysqli_query($conn, $product_sql);
@@ -24,7 +25,8 @@ $product_result = mysqli_query($conn, $product_sql);
 $stats_sql = "SELECT COUNT(*) AS total_products,
               COALESCE(SUM(views), 0) AS total_views
               FROM products
-              WHERE seller_id='$seller_id'";
+              WHERE seller_id='$seller_id'
+              AND approval_status='Approved'";
 
 $stats = mysqli_fetch_assoc(mysqli_query($conn, $stats_sql));
 $isVerified = $seller['verification_status'] == "Approved";

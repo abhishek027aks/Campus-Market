@@ -97,7 +97,8 @@ if(isset($_POST['update_product'])){
             image='$fileName',
             file_type='$fileType',
             preview_image='$previewImage',
-            preview_file='$previewFile'
+            preview_file='$previewFile',
+            approval_status='Pending'
             WHERE id='$id'
             AND seller_id='$user_id'";
 

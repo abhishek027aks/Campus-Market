@@ -81,6 +81,52 @@ add_product_column_if_missing(
     "views INT DEFAULT 0"
 );
 
+add_product_column_if_missing(
+    $conn,
+    "category",
+    "category VARCHAR(100) DEFAULT 'Others'"
+);
+
+add_product_column_if_missing(
+    $conn,
+    "status",
+    "status VARCHAR(30) DEFAULT 'Available'"
+);
+
+add_product_column_if_missing(
+    $conn,
+    "file_type",
+    "file_type VARCHAR(20) DEFAULT ''"
+);
+
+add_product_column_if_missing(
+    $conn,
+    "preview_image",
+    "preview_image VARCHAR(255) DEFAULT ''"
+);
+
+add_product_column_if_missing(
+    $conn,
+    "preview_file",
+    "preview_file VARCHAR(255) DEFAULT ''"
+);
+
+$approval_column = mysqli_query(
+    $conn,
+    "SHOW COLUMNS FROM products LIKE 'approval_status'"
+);
+
+if($approval_column && mysqli_num_rows($approval_column) == 0){
+    mysqli_query(
+        $conn,
+        "ALTER TABLE products
+         ADD approval_status VARCHAR(20) NOT NULL DEFAULT 'Pending'"
+    );
+
+    // Products created before moderation existed remain publicly available.
+    mysqli_query($conn, "UPDATE products SET approval_status='Approved'");
+}
+
 mysqli_query(
     $conn,
     "CREATE TABLE IF NOT EXISTS admins (

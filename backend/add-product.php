@@ -156,7 +156,8 @@ if(isset($_POST['add_product'])){
         status,
         file_type,
         preview_image,
-        preview_file
+        preview_file,
+        approval_status
     )
     VALUES
     (
@@ -169,7 +170,8 @@ if(isset($_POST['add_product'])){
         '$status',
         '$file_extension',
         '$preview_image',
-        '$preview_file'
+        '$preview_file',
+        'Pending'
     )";
 
     if(mysqli_query($conn,$sql)){

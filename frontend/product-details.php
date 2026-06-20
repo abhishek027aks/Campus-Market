@@ -8,23 +8,35 @@ if(!isset($_GET['id'])){
 
 $id = (int)$_GET['id'];
 
-mysqli_query(
-    $conn,
-    "UPDATE products
-     SET views = views + 1
-     WHERE id = $id"
-);
+$visibility = "products.approval_status='Approved'";
+
+if(isset($_SESSION['user_id'])){
+    $viewer_id = (int)$_SESSION['user_id'];
+    $visibility .= " OR products.seller_id='$viewer_id'";
+}
+
+if(isset($_SESSION['admin_id'])){
+    $visibility .= " OR 1=1";
+}
 
 $sql = "SELECT products.*, users.fullname, users.email, users.verification_status
         FROM products
         JOIN users ON products.seller_id = users.id
-        WHERE products.id = $id";
+        WHERE products.id = $id
+        AND ($visibility)";
 
 $result = mysqli_query($conn,$sql);
 $product = mysqli_fetch_assoc($result);
 
 if(!$product){
     die("Product Not Found");
+}
+
+if($product['approval_status'] == "Approved"){
+    mysqli_query(
+        $conn,
+        "UPDATE products SET views = views + 1 WHERE id = $id"
+    );
 }
 
 $fileType = strtolower($product['file_type']);
