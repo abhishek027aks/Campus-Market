@@ -31,9 +31,27 @@ if(isset($_GET['category']) && !empty($_GET['category'])){
     $sql .= " AND products.category='$category'";
 }
 
-$sql .= " ORDER BY products.id DESC";
+$sql .= " ORDER BY products.is_featured DESC, products.id DESC";
 
 $result = mysqli_query($conn,$sql);
+
+$featured_sql = "SELECT products.*,
+        COALESCE(review_summary.average_rating, 0) AS average_rating,
+        COALESCE(review_summary.total_reviews, 0) AS total_reviews
+        FROM products
+        LEFT JOIN (
+            SELECT product_id,
+            AVG(rating) AS average_rating,
+            COUNT(*) AS total_reviews
+            FROM product_reviews
+            GROUP BY product_id
+        ) AS review_summary ON products.id = review_summary.product_id
+        WHERE products.approval_status='Approved'
+        AND products.is_featured=1
+        ORDER BY products.id DESC
+        LIMIT 4";
+
+$featured_result = mysqli_query($conn, $featured_sql);
 ?>
 
 <!DOCTYPE html>
@@ -89,6 +107,7 @@ h2{
     border-radius:10px;
     box-shadow:0 0 10px rgba(0,0,0,.1);
     text-align:center;
+    position:relative;
 }
 
 .product-img{
@@ -123,6 +142,23 @@ h2{
 
 .sold{
     background:#dc3545;
+}
+
+.featured{
+    background:#f59f00;
+    color:#111;
+}
+
+.featured-ribbon{
+    position:absolute;
+    top:12px;
+    right:12px;
+    background:#f59f00;
+    color:#111;
+    padding:6px 10px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:bold;
 }
 
 .date{
@@ -163,6 +199,66 @@ h2{
 <body>
 
 <h2>All Products</h2>
+
+<?php if($featured_result && mysqli_num_rows($featured_result) > 0){ ?>
+<h2>Featured Products</h2>
+
+<div class="features">
+
+<?php while($featured = mysqli_fetch_assoc($featured_result)){ ?>
+    <div class="card">
+        <span class="featured-ribbon">Featured</span>
+
+        <?php
+        $featuredFile = strtolower($featured['file_type']);
+
+        if(!empty($featured['preview_image'])){
+            echo '<img src="uploads/'.htmlspecialchars($featured['preview_image']).'" alt="'.htmlspecialchars($featured['title']).'" class="product-img">';
+        }
+        elseif($featuredFile=="image" || $featuredFile=="jpg" || $featuredFile=="jpeg" || $featuredFile=="png"){
+            echo '<img src="uploads/'.htmlspecialchars($featured['image']).'" alt="'.htmlspecialchars($featured['title']).'" class="product-img">';
+        }
+        elseif($featuredFile=="pdf"){
+            echo '<img src="images/pdf.png" alt="PDF file" class="product-img">';
+        }
+        elseif($featuredFile=="docx"){
+            echo '<img src="images/docx.png" alt="DOCX file" class="product-img">';
+        }
+        elseif($featuredFile=="pptx"){
+            echo '<img src="images/ppt.png" alt="PPTX file" class="product-img">';
+        }
+        elseif($featuredFile=="mp4"){
+            echo '<img src="images/video.png" alt="Video file" class="product-img">';
+        }
+        else{
+            echo '<img src="images/file.png" alt="File" class="product-img">';
+        }
+        ?>
+
+        <h3><?php echo htmlspecialchars($featured['title']); ?></h3>
+        <p><?php echo htmlspecialchars($featured['description']); ?></p>
+        <div class="price">Rs. <?php echo htmlspecialchars($featured['price']); ?></div>
+        <span class="badge featured">Featured</span>
+        <span class="badge category"><?php echo htmlspecialchars($featured['category']); ?></span>
+        <div class="views">Views: <?php echo (int)$featured['views']; ?></div>
+        <div class="rating">
+            <span class="stars">
+            <?php
+            $featuredRating = round((float)$featured['average_rating'], 1);
+            for($i = 1; $i <= 5; $i++){
+                echo $i <= round($featuredRating) ? "&#9733;" : "&#9734;";
+            }
+            ?>
+            </span>
+            <?php echo $featuredRating; ?> / 5
+            (<?php echo (int)$featured['total_reviews']; ?>)
+        </div>
+        <a class="btn" href="product-details.php?id=<?php echo (int)$featured['id']; ?>">View Details</a>
+    </div>
+<?php } ?>
+
+</div>
+<?php } ?>
 
 <div class="search-box">
 
@@ -216,6 +312,10 @@ while($row = mysqli_fetch_assoc($result)){
 ?>
 
 <div class="card">
+
+<?php if((int)$row['is_featured'] === 1){ ?>
+<span class="featured-ribbon">Featured</span>
+<?php } ?>
 
 <?php
 if(!empty($row['preview_image'])){
@@ -308,6 +408,12 @@ Rs. <?php echo htmlspecialchars($row['price']); ?>
 <span class="badge category">
 <?php echo htmlspecialchars($row['category']); ?>
 </span>
+
+<?php if((int)$row['is_featured'] === 1){ ?>
+<span class="badge featured">
+Featured
+</span>
+<?php } ?>
 
 <?php
 if($row['status']=="Available"){

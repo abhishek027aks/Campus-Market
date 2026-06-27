@@ -78,6 +78,24 @@ $notification_count = mysqli_fetch_assoc(
 
     <br><br>
 
+    <a href="lost-found.php">
+        <button>Lost & Found</button>
+    </a>
+
+    <br><br>
+
+    <a href="notice-board.php">
+        <button>Notice Board</button>
+    </a>
+
+    <br><br>
+
+    <a href="my-payments.php">
+        <button>My Payments</button>
+    </a>
+
+    <br><br>
+
     <a href="notifications.php">
         <button>
             Notifications (<?php echo (int)$notification_count['total']; ?>)

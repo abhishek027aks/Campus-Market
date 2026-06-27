@@ -44,8 +44,9 @@ th,td{padding:12px;border-bottom:1px solid #eee;text-align:left;vertical-align:t
 th{background:#0d6efd;color:#fff}
 .badge{display:inline-block;padding:6px 10px;border-radius:16px;color:#fff;font-size:13px}
 .Pending{background:#ffc107;color:#111}.Approved{background:#198754}.Rejected{background:#dc3545}
+.featured-badge{background:#f59f00;color:#111}
 .btn{display:inline-block;padding:8px 10px;border:0;border-radius:5px;color:#fff;text-decoration:none;cursor:pointer;margin:2px}
-.approve{background:#198754}.reject{background:#dc3545}.view{background:#6f42c1}.back{background:#0d6efd}
+.approve{background:#198754}.reject{background:#dc3545}.view{background:#6f42c1}.back{background:#0d6efd}.feature{background:#f59f00;color:#111}.unfeature{background:#495057}
 .action-form{display:inline}
 @media(max-width:900px){table{display:block;overflow-x:auto}.topbar{align-items:flex-start;flex-direction:column;gap:10px}}
 </style>
@@ -70,7 +71,7 @@ th{background:#0d6efd;color:#fff}
     </div>
 
     <table>
-        <tr><th>Product</th><th>Seller</th><th>Details</th><th>Approval</th><th>Action</th></tr>
+        <tr><th>Product</th><th>Seller</th><th>Details</th><th>Approval</th><th>Featured</th><th>Action</th></tr>
         <?php while($product = mysqli_fetch_assoc($result)){ ?>
         <tr>
             <td><strong><?php echo htmlspecialchars($product['title']); ?></strong><br>#<?php echo (int)$product['id']; ?></td>
@@ -78,11 +79,27 @@ th{background:#0d6efd;color:#fff}
             <td>Rs. <?php echo htmlspecialchars($product['price']); ?><br><?php echo htmlspecialchars($product['category']); ?><br><?php echo htmlspecialchars($product['status']); ?></td>
             <td><span class="badge <?php echo htmlspecialchars($product['approval_status']); ?>"><?php echo htmlspecialchars($product['approval_status']); ?></span></td>
             <td>
+                <?php if((int)$product['is_featured'] === 1){ ?>
+                    <span class="badge featured-badge">Featured</span>
+                <?php }else{ ?>
+                    <span class="badge Rejected">Normal</span>
+                <?php } ?>
+            </td>
+            <td>
                 <a class="btn view" target="_blank" href="../frontend/product-details.php?id=<?php echo (int)$product['id']; ?>">Preview</a>
                 <form class="action-form" method="POST" action="update-product-approval.php">
                     <input type="hidden" name="id" value="<?php echo (int)$product['id']; ?>">
                     <button class="btn approve" name="status" value="Approved" type="submit">Approve</button>
                     <button class="btn reject" name="status" value="Rejected" type="submit">Reject</button>
+                </form>
+                <form class="action-form" method="POST" action="update-product-featured.php">
+                    <input type="hidden" name="id" value="<?php echo (int)$product['id']; ?>">
+                    <input type="hidden" name="status_filter" value="<?php echo htmlspecialchars($status); ?>">
+                    <?php if((int)$product['is_featured'] === 1){ ?>
+                        <button class="btn unfeature" name="featured" value="0" type="submit">Unfeature</button>
+                    <?php }else{ ?>
+                        <button class="btn feature" name="featured" value="1" type="submit">Feature</button>
+                    <?php } ?>
                 </form>
             </td>
         </tr>

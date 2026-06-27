@@ -159,6 +159,10 @@ iframe{
     background:#fd7e14;
 }
 
+.pay{
+    background:#20c997;
+}
+
 .seller-link{
     color:#0d6efd;
     font-weight:bold;
@@ -172,6 +176,17 @@ iframe{
     background:#198754;
     color:white;
     font-size:13px;
+}
+
+.featured-badge{
+    display:inline-block;
+    padding:6px 12px;
+    border-radius:20px;
+    background:#f59f00;
+    color:#111;
+    font-size:14px;
+    font-weight:bold;
+    margin-bottom:10px;
 }
 
 .rating-summary{
@@ -268,6 +283,10 @@ else{
 </div>
 
 <h2><?php echo htmlspecialchars($product['title']); ?></h2>
+
+<?php if((int)$product['is_featured'] === 1){ ?>
+    <span class="featured-badge">Featured Product</span>
+<?php } ?>
 
 <p><?php echo nl2br(htmlspecialchars($product['description'])); ?></p>
 
@@ -387,6 +406,12 @@ class="btn chat"
 href="chat.php?product_id=<?php echo (int)$product['id']; ?>">
 Chat With Seller
 </a>
+
+<a
+class="btn pay"
+href="payment.php?product_id=<?php echo (int)$product['id']; ?>">
+Pay Now
+</a>
 <?php } ?>
 <?php }else{ ?>
 <a
@@ -399,6 +424,12 @@ Login To Wishlist
 class="btn chat"
 href="login.html">
 Login To Chat
+</a>
+
+<a
+class="btn pay"
+href="login.html">
+Login To Pay
 </a>
 <?php } ?>
 

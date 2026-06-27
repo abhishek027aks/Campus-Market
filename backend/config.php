@@ -83,6 +83,12 @@ add_product_column_if_missing(
 
 add_product_column_if_missing(
     $conn,
+    "is_featured",
+    "is_featured TINYINT(1) NOT NULL DEFAULT 0"
+);
+
+add_product_column_if_missing(
+    $conn,
     "category",
     "category VARCHAR(100) DEFAULT 'Others'"
 );
@@ -207,6 +213,50 @@ mysqli_query(
         message TEXT NOT NULL,
         link VARCHAR(255) DEFAULT '',
         is_read TINYINT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )"
+);
+
+mysqli_query(
+    $conn,
+    "CREATE TABLE IF NOT EXISTS lost_found (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        item_type VARCHAR(20) NOT NULL,
+        title VARCHAR(150) NOT NULL,
+        description TEXT NOT NULL,
+        location VARCHAR(150) NOT NULL,
+        contact VARCHAR(120) NOT NULL,
+        image VARCHAR(255) DEFAULT '',
+        status VARCHAR(20) NOT NULL DEFAULT 'Open',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )"
+);
+
+mysqli_query(
+    $conn,
+    "CREATE TABLE IF NOT EXISTS notices (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        admin_id INT NOT NULL,
+        title VARCHAR(180) NOT NULL,
+        description TEXT NOT NULL,
+        category VARCHAR(50) NOT NULL,
+        notice_date DATE DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )"
+);
+
+mysqli_query(
+    $conn,
+    "CREATE TABLE IF NOT EXISTS payments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        product_id INT NOT NULL,
+        buyer_id INT NOT NULL,
+        seller_id INT NOT NULL,
+        amount DECIMAL(10,2) NOT NULL,
+        payment_method VARCHAR(30) NOT NULL,
+        transaction_id VARCHAR(120) NOT NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'Pending',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )"
 );
