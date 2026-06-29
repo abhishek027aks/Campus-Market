@@ -11,7 +11,8 @@ $user_id = (int)$_SESSION['user_id'];
 
 $summary_sql = "SELECT
                 COUNT(*) AS products_uploaded,
-                COALESCE(SUM(views), 0) AS total_views
+                COALESCE(SUM(views), 0) AS total_views,
+                COALESCE(SUM(downloads), 0) AS total_downloads
                 FROM products
                 WHERE seller_id='$user_id'";
 
@@ -101,7 +102,7 @@ body{
 
 .stats{
     display:grid;
-    grid-template-columns:repeat(5,1fr);
+    grid-template-columns:repeat(6,1fr);
     gap:15px;
     margin-bottom:18px;
 }
@@ -186,6 +187,11 @@ th{
         </div>
 
         <div class="stat-card">
+            <h2><?php echo (int)$summary['total_downloads']; ?></h2>
+            <p>Total Downloads</p>
+        </div>
+
+        <div class="stat-card">
             <h2><?php echo (int)$wishlist['total_wishlist']; ?></h2>
             <p>Wishlist Saves</p>
         </div>
@@ -206,6 +212,7 @@ th{
             <tr>
                 <th>Product</th>
                 <th>Views</th>
+                <th>Downloads</th>
                 <th>Wishlist</th>
                 <th>Rating</th>
                 <th>Reviews</th>
@@ -216,6 +223,7 @@ th{
                 <tr>
                     <td><?php echo htmlspecialchars($product['title']); ?></td>
                     <td><?php echo (int)$product['views']; ?></td>
+                    <td><?php echo (int)$product['downloads']; ?></td>
                     <td><?php echo (int)$product['wishlist_count']; ?></td>
                     <td><?php echo round((float)$product['average_rating'], 1); ?> / 5</td>
                     <td><?php echo (int)$product['total_reviews']; ?></td>

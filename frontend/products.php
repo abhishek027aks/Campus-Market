@@ -173,6 +173,12 @@ h2{
     margin-top:8px;
 }
 
+.downloads{
+    color:#555;
+    font-size:14px;
+    margin-top:8px;
+}
+
 .rating{
     color:#555;
     font-size:14px;
@@ -241,6 +247,7 @@ h2{
         <span class="badge featured">Featured</span>
         <span class="badge category"><?php echo htmlspecialchars($featured['category']); ?></span>
         <div class="views">Views: <?php echo (int)$featured['views']; ?></div>
+        <div class="downloads">Downloads: <?php echo (int)$featured['downloads']; ?></div>
         <div class="rating">
             <span class="stars">
             <?php
@@ -430,6 +437,10 @@ Added:
 
 <div class="views">
 Views: <?php echo (int)$row['views']; ?>
+</div>
+
+<div class="downloads">
+Downloads: <?php echo (int)$row['downloads']; ?>
 </div>
 
 <div class="rating">

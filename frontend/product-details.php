@@ -163,6 +163,18 @@ iframe{
     background:#20c997;
 }
 
+.report{
+    background:#dc3545;
+}
+
+.success{
+    background:#d1e7dd;
+    color:#0f5132;
+    padding:12px;
+    border-radius:8px;
+    margin:12px 0;
+}
+
 .seller-link{
     color:#0d6efd;
     font-weight:bold;
@@ -249,6 +261,10 @@ iframe{
 
 <div class="product-box">
 
+<?php if(isset($_GET['reported'])){ ?>
+    <div class="success">Report submitted successfully. Admin will review it.</div>
+<?php } ?>
+
 <div class="preview">
 
 <?php
@@ -303,6 +319,8 @@ Rs. <?php echo htmlspecialchars($product['price']); ?>
 <p><b>File Type:</b> <?php echo htmlspecialchars(strtoupper($product['file_type'])); ?></p>
 
 <p><b>Views:</b> <?php echo (int)$product['views']; ?></p>
+
+<p><b>Downloads:</b> <?php echo (int)$product['downloads']; ?></p>
 
 <p>
 <b>Uploaded On:</b>
@@ -412,6 +430,12 @@ class="btn pay"
 href="payment.php?product_id=<?php echo (int)$product['id']; ?>">
 Pay Now
 </a>
+
+<a
+class="btn report"
+href="report-product.php?product_id=<?php echo (int)$product['id']; ?>">
+Report Product
+</a>
 <?php } ?>
 <?php }else{ ?>
 <a
@@ -431,11 +455,17 @@ class="btn pay"
 href="login.html">
 Login To Pay
 </a>
+
+<a
+class="btn report"
+href="login.html">
+Login To Report
+</a>
 <?php } ?>
 
 <a
 class="btn download"
-href="uploads/<?php echo htmlspecialchars($product['image']); ?>"
+href="../backend/download-product.php?id=<?php echo (int)$product['id']; ?>"
 download>
 Download File
 </a>

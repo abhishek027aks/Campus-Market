@@ -33,7 +33,8 @@ body{background:#f4f7fc;font-family:Arial,sans-serif}
 table{width:100%;border-collapse:collapse;background:#fff;box-shadow:0 0 10px rgba(0,0,0,.08);border-radius:8px;overflow:hidden}
 th,td{padding:12px;border-bottom:1px solid #eee;text-align:left}
 th{background:#0d6efd;color:#fff}
-.badge{display:inline-block;padding:6px 10px;border-radius:20px;color:#111;background:#ffc107;font-size:13px}
+.badge{display:inline-block;padding:6px 10px;border-radius:20px;color:#fff;font-size:13px}
+.Pending{background:#ffc107;color:#111}.Approved{background:#198754}.Rejected{background:#dc3545}
 .btn{display:inline-block;padding:10px 14px;border-radius:6px;background:#0d6efd;color:#fff;text-decoration:none}
 @media(max-width:800px){table{display:block;overflow-x:auto}}
 </style>
@@ -54,7 +55,11 @@ th{background:#0d6efd;color:#fff}
                     <td>Rs. <?php echo htmlspecialchars($payment['amount']); ?></td>
                     <td><?php echo htmlspecialchars($payment['payment_method']); ?></td>
                     <td><?php echo htmlspecialchars($payment['transaction_id']); ?></td>
-                    <td><span class="badge"><?php echo htmlspecialchars($payment['status']); ?></span></td>
+                    <td>
+                        <span class="badge <?php echo htmlspecialchars($payment['status']); ?>">
+                            <?php echo htmlspecialchars($payment['status']); ?>
+                        </span>
+                    </td>
                     <td><?php echo date("d M Y", strtotime($payment['created_at'])); ?></td>
                 </tr>
             <?php } ?>

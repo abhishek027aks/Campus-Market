@@ -30,6 +30,14 @@ $pending_products_count = mysqli_fetch_assoc(
 $notices_count = mysqli_fetch_assoc(
     mysqli_query($conn, "SELECT COUNT(*) AS total FROM notices")
 );
+
+$pending_payments_count = mysqli_fetch_assoc(
+    mysqli_query($conn, "SELECT COUNT(*) AS total FROM payments WHERE status='Pending'")
+);
+
+$pending_reports_count = mysqli_fetch_assoc(
+    mysqli_query($conn, "SELECT COUNT(*) AS total FROM product_reports WHERE status='Pending'")
+);
 ?>
 
 <!DOCTYPE html>
@@ -63,7 +71,7 @@ body{
 
 .stats{
     display:grid;
-    grid-template-columns:repeat(6,1fr);
+    grid-template-columns:repeat(8,1fr);
     gap:16px;
     margin-top:22px;
 }
@@ -155,12 +163,24 @@ body{
             <h2><?php echo (int)$notices_count['total']; ?></h2>
             <p>Notices</p>
         </div>
+
+        <div class="stat-card">
+            <h2><?php echo (int)$pending_payments_count['total']; ?></h2>
+            <p>Pending Payments</p>
+        </div>
+
+        <div class="stat-card">
+            <h2><?php echo (int)$pending_reports_count['total']; ?></h2>
+            <p>Product Reports</p>
+        </div>
     </div>
 
     <div class="actions">
         <a class="admin-btn" href="users.php">Manage Student Verification</a>
         <a class="admin-btn" href="products.php">Manage Products</a>
         <a class="admin-btn" href="notices.php">Manage Notices</a>
+        <a class="admin-btn" href="payments.php">Review Payments</a>
+        <a class="admin-btn" href="reports.php">Review Reports</a>
     </div>
 </div>
 

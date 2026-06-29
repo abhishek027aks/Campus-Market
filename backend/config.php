@@ -83,6 +83,12 @@ add_product_column_if_missing(
 
 add_product_column_if_missing(
     $conn,
+    "downloads",
+    "downloads INT DEFAULT 0"
+);
+
+add_product_column_if_missing(
+    $conn,
     "is_featured",
     "is_featured TINYINT(1) NOT NULL DEFAULT 0"
 );
@@ -258,6 +264,21 @@ mysqli_query(
         transaction_id VARCHAR(120) NOT NULL,
         status VARCHAR(20) NOT NULL DEFAULT 'Pending',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )"
+);
+
+mysqli_query(
+    $conn,
+    "CREATE TABLE IF NOT EXISTS product_reports (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        product_id INT NOT NULL,
+        reporter_id INT NOT NULL,
+        seller_id INT NOT NULL,
+        reason VARCHAR(100) NOT NULL,
+        description TEXT NOT NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'Pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        reviewed_at DATETIME DEFAULT NULL
     )"
 );
 ?>

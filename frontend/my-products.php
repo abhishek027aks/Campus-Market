@@ -175,6 +175,11 @@ src="uploads/<?php echo $row['image']; ?>">
 <?php echo strtoupper($row['file_type']); ?>
 </p>
 
+<p>
+<b>Downloads:</b>
+<?php echo (int)$row['downloads']; ?>
+</p>
+
 <a
 class="btn preview-btn"
 target="_blank"
@@ -185,7 +190,7 @@ Preview
 <a
 class="btn download-btn"
 download
-href="uploads/<?php echo $row['image']; ?>">
+href="../backend/download-product.php?id=<?php echo (int)$row['id']; ?>">
 Download
 </a>
 
