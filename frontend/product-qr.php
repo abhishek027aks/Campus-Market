@@ -118,6 +118,7 @@ body{
 </style>
 </head>
 <body>
+<?php include "includes/navbar.php"; ?>
 
 <div class="qr-card">
     <h1>Product QR Code</h1>

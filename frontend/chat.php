@@ -207,6 +207,7 @@ body{
 </style>
 </head>
 <body>
+<?php include "includes/navbar.php"; ?>
 
 <div class="chat-wrap">
     <div class="chat-head">

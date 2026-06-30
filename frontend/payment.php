@@ -55,6 +55,7 @@ input,select{width:100%;padding:11px;margin-top:7px;border:1px solid #ddd;border
 </style>
 </head>
 <body>
+<?php include "includes/navbar.php"; ?>
 <div class="payment-box">
     <h1>Payment</h1>
 

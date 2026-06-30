@@ -164,6 +164,7 @@ th{
 </style>
 </head>
 <body>
+<?php include "includes/navbar.php"; ?>
 
 <div class="wrap">
     <div class="topbar">

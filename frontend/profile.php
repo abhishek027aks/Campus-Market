@@ -270,6 +270,7 @@ body{
 
 </head>
 <body>
+<?php include "includes/navbar.php"; ?>
 
 <div class="profile-wrap">
 

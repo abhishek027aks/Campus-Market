@@ -26,6 +26,7 @@ textarea{min-height:120px;resize:vertical}
 </style>
 </head>
 <body>
+<?php include "includes/navbar.php"; ?>
 <div class="form-box">
     <h1>Post Lost & Found Item</h1>
 

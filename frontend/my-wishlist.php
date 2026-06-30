@@ -77,6 +77,7 @@ body{
 </style>
 </head>
 <body>
+<?php include "includes/navbar.php"; ?>
 
 <div class="page-head">
     <h1>My Wishlist</h1>

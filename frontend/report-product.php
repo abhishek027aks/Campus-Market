@@ -53,6 +53,7 @@ textarea{min-height:130px;resize:vertical}
 </style>
 </head>
 <body>
+<?php include "includes/navbar.php"; ?>
 <div class="form-box">
     <h1>Report Product</h1>
 

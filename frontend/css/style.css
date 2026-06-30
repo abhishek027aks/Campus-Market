@@ -13,34 +13,45 @@ body {
 }
 
 /* NAVBAR */
-nav {
+nav,
+.site-navbar {
     background: #0d6efd;
     color: white;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 18px 60px;
+    gap: 18px;
 }
 
-.logo {
+.logo,
+.site-logo {
     font-size: 30px;
     font-weight: bold;
-}
-
-nav ul {
-    display: flex;
-    list-style: none;
-    gap: 25px;
-}
-
-nav a {
     color: white;
     text-decoration: none;
-    font-size: 18px;
+    white-space: nowrap;
+}
+
+nav ul,
+.site-nav-links {
+    display: flex;
+    list-style: none;
+    gap: 18px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+nav a,
+.site-nav-links a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
     transition: color 0.2s ease;
 }
 
-nav a:hover {
+nav a:hover,
+.site-nav-links a:hover {
     color: #ffd43b;
 }
 
@@ -338,10 +349,16 @@ footer {
 
 /* RESPONSIVE */
 @media (max-width: 768px) {
-    nav {
+    nav,
+    .site-navbar {
         flex-direction: column;
         gap: 15px;
         padding: 20px;
+    }
+
+    .site-nav-links {
+        justify-content: center;
+        gap: 12px;
     }
 
     .hero h1 {

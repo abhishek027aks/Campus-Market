@@ -258,6 +258,7 @@ iframe{
 
 </head>
 <body>
+<?php include "includes/navbar.php"; ?>
 
 <div class="product-box">
 

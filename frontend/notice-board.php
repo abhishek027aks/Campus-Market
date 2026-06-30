@@ -44,6 +44,7 @@ body{background:#f4f7fc;font-family:Arial,sans-serif}
 </style>
 </head>
 <body>
+<?php include "includes/navbar.php"; ?>
 <main class="page">
     <div class="topbar">
         <div>

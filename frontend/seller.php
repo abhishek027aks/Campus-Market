@@ -159,6 +159,7 @@ body{
 </style>
 </head>
 <body>
+<?php include "includes/navbar.php"; ?>
 
 <div class="seller-wrap">
     <div class="seller-header">

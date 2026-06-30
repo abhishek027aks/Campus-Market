@@ -97,6 +97,7 @@ h2{
 
 </head>
 <body>
+<?php include "includes/navbar.php"; ?>
 
 <h2>My Products</h2>
 

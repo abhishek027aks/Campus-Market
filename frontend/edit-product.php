@@ -100,6 +100,7 @@ $isOtherCategory = !in_array($product['category'], $defaultCategories);
 
 </head>
 <body>
+<?php include "includes/navbar.php"; ?>
 
 <div class="form-container">
 
