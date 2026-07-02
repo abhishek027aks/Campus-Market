@@ -33,6 +33,18 @@ if(!function_exists("add_product_column_if_missing")){
     }
 }
 
+if(!function_exists("campus_password_matches")){
+    function campus_password_matches($plain_password, $stored_password){
+        $password_info = password_get_info($stored_password);
+
+        if(isset($password_info['algoName']) && $password_info['algoName'] !== "unknown"){
+            return password_verify($plain_password, $stored_password);
+        }
+
+        return hash_equals((string)$stored_password, (string)$plain_password);
+    }
+}
+
 add_user_column_if_missing(
     $conn,
     "profile_photo",
@@ -152,10 +164,12 @@ mysqli_query(
 $admin_check = mysqli_query($conn, "SELECT id FROM admins LIMIT 1");
 
 if($admin_check && mysqli_num_rows($admin_check) == 0){
+    $default_admin_password = password_hash("admin123", PASSWORD_DEFAULT);
+
     mysqli_query(
         $conn,
         "INSERT INTO admins(username,password)
-         VALUES('admin','admin123')"
+         VALUES('admin','$default_admin_password')"
     );
 }
 

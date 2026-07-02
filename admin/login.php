@@ -11,25 +11,38 @@ $error = "";
 
 if(isset($_POST['admin_login'])){
     $username = mysqli_real_escape_string($conn, trim($_POST['username']));
-    $password = mysqli_real_escape_string($conn, trim($_POST['password']));
+    $password = trim($_POST['password']);
 
     $sql = "SELECT * FROM admins
             WHERE username='$username'
-            AND password='$password'";
+            LIMIT 1";
 
     $result = mysqli_query($conn, $sql);
 
     if($result && mysqli_num_rows($result) > 0){
         $admin = mysqli_fetch_assoc($result);
 
-        $_SESSION['admin_id'] = $admin['id'];
-        $_SESSION['admin_username'] = $admin['username'];
+        if(campus_password_matches($password, $admin['password'])){
+            $_SESSION['admin_id'] = $admin['id'];
+            $_SESSION['admin_username'] = $admin['username'];
 
-        header("Location: dashboard.php");
-        exit();
-    }else{
-        $error = "Invalid admin username or password";
+            $password_info = password_get_info($admin['password']);
+
+            if(!isset($password_info['algoName']) || $password_info['algoName'] === "unknown"){
+                $new_hash = mysqli_real_escape_string(
+                    $conn,
+                    password_hash($password, PASSWORD_DEFAULT)
+                );
+                $admin_id = (int)$admin['id'];
+                mysqli_query($conn, "UPDATE admins SET password='$new_hash' WHERE id='$admin_id'");
+            }
+
+            header("Location: dashboard.php");
+            exit();
+        }
     }
+
+    $error = "Invalid admin username or password";
 }
 ?>
 

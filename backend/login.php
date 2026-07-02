@@ -1,33 +1,48 @@
 <?php
-
 session_start();
 include "config.php";
 
-if(isset($_POST['login'])){
+if(!isset($_POST['login'])){
+    die("Invalid Request");
+}
 
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+$email = trim($_POST['email']);
+$password = $_POST['password'];
 
-    $sql = "SELECT * FROM users
-            WHERE email='$email'
-            AND password='$password'";
+if($email === "" || $password === ""){
+    die("Email and password are required");
+}
 
-    $result = mysqli_query($conn,$sql);
+$safe_email = mysqli_real_escape_string($conn, $email);
 
-    if(mysqli_num_rows($result) > 0){
+$sql = "SELECT * FROM users
+        WHERE email='$safe_email'
+        LIMIT 1";
 
-        $user = mysqli_fetch_assoc($result);
+$result = mysqli_query($conn, $sql);
 
+if($result && mysqli_num_rows($result) > 0){
+    $user = mysqli_fetch_assoc($result);
+
+    if(campus_password_matches($password, $user['password'])){
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['fullname'] = $user['fullname'];
 
+        $password_info = password_get_info($user['password']);
+
+        if(!isset($password_info['algoName']) || $password_info['algoName'] === "unknown"){
+            $new_hash = mysqli_real_escape_string(
+                $conn,
+                password_hash($password, PASSWORD_DEFAULT)
+            );
+            $user_id = (int)$user['id'];
+            mysqli_query($conn, "UPDATE users SET password='$new_hash' WHERE id='$user_id'");
+        }
+
         header("Location: ../frontend/dashboard.php");
         exit();
-
-    }else{
-
-        echo "Invalid Email or Password";
-
     }
 }
+
+echo "Invalid Email or Password";
 ?>
