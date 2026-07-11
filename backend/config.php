@@ -334,4 +334,19 @@ mysqli_query(
         INDEX email_token_hash_index (token_hash)
     )"
 );
+
+mysqli_query(
+    $conn,
+    "CREATE TABLE IF NOT EXISTS login_otps (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        otp_hash VARCHAR(255) NOT NULL,
+        expires_at DATETIME NOT NULL,
+        used_at DATETIME DEFAULT NULL,
+        attempts INT NOT NULL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX login_otp_user_index (user_id),
+        INDEX login_otp_hash_index (otp_hash)
+    )"
+);
 ?>
