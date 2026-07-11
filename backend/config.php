@@ -87,6 +87,19 @@ add_user_column_if_missing(
     "verification_status VARCHAR(20) DEFAULT 'Not Submitted'"
 );
 
+$email_verified_column = mysqli_query(
+    $conn,
+    "SHOW COLUMNS FROM users LIKE 'email_verified'"
+);
+
+if($email_verified_column && mysqli_num_rows($email_verified_column) == 0){
+    mysqli_query(
+        $conn,
+        "ALTER TABLE users
+         ADD email_verified TINYINT(1) NOT NULL DEFAULT 1"
+    );
+}
+
 add_product_column_if_missing(
     $conn,
     "views",
@@ -306,6 +319,19 @@ mysqli_query(
         used_at DATETIME DEFAULT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         INDEX token_hash_index (token_hash)
+    )"
+);
+
+mysqli_query(
+    $conn,
+    "CREATE TABLE IF NOT EXISTS email_verifications (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        token_hash VARCHAR(255) NOT NULL,
+        expires_at DATETIME NOT NULL,
+        used_at DATETIME DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX email_token_hash_index (token_hash)
     )"
 );
 ?>
