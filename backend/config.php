@@ -45,6 +45,79 @@ if(!function_exists("campus_password_matches")){
     }
 }
 
+if(!function_exists("campus_seed_permission")){
+    function campus_seed_permission($conn, $name, $description){
+        $safe_name = mysqli_real_escape_string($conn, $name);
+        $safe_description = mysqli_real_escape_string($conn, $description);
+
+        mysqli_query(
+            $conn,
+            "INSERT INTO permissions(name, description)
+             VALUES('$safe_name', '$safe_description')
+             ON DUPLICATE KEY UPDATE description=VALUES(description)"
+        );
+    }
+}
+
+if(!function_exists("campus_admin_has_permission")){
+    function campus_admin_has_permission($conn, $admin_id, $permission_name){
+        $admin_id = (int)$admin_id;
+        $safe_permission = mysqli_real_escape_string($conn, $permission_name);
+
+        $result = mysqli_query(
+            $conn,
+            "SELECT permissions.id
+             FROM permissions
+             JOIN role_permissions ON permissions.id = role_permissions.permission_id
+             JOIN admin_roles ON role_permissions.role_id = admin_roles.role_id
+             WHERE admin_roles.admin_id='$admin_id'
+             AND permissions.name='$safe_permission'
+             LIMIT 1"
+        );
+
+        return $result && mysqli_num_rows($result) > 0;
+    }
+}
+
+if(!function_exists("campus_admin_permissions")){
+    function campus_admin_permissions($conn, $admin_id){
+        $admin_id = (int)$admin_id;
+        $permissions = [];
+
+        $result = mysqli_query(
+            $conn,
+            "SELECT DISTINCT permissions.name
+             FROM permissions
+             JOIN role_permissions ON permissions.id = role_permissions.permission_id
+             JOIN admin_roles ON role_permissions.role_id = admin_roles.role_id
+             WHERE admin_roles.admin_id='$admin_id'
+             ORDER BY permissions.name"
+        );
+
+        if($result){
+            while($row = mysqli_fetch_assoc($result)){
+                $permissions[] = $row['name'];
+            }
+        }
+
+        return $permissions;
+    }
+}
+
+if(!function_exists("campus_require_admin_permission")){
+    function campus_require_admin_permission($conn, $permission_name){
+        if(!isset($_SESSION['admin_id'])){
+            header("Location: login.php");
+            exit();
+        }
+
+        if(!campus_admin_has_permission($conn, $_SESSION['admin_id'], $permission_name)){
+            http_response_code(403);
+            die("Access denied");
+        }
+    }
+}
+
 add_user_column_if_missing(
     $conn,
     "profile_photo",
@@ -174,6 +247,96 @@ mysqli_query(
     )"
 );
 
+mysqli_query(
+    $conn,
+    "CREATE TABLE IF NOT EXISTS roles (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        description VARCHAR(255) DEFAULT '',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )"
+);
+
+mysqli_query(
+    $conn,
+    "CREATE TABLE IF NOT EXISTS permissions (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        description VARCHAR(255) DEFAULT '',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )"
+);
+
+mysqli_query(
+    $conn,
+    "CREATE TABLE IF NOT EXISTS role_permissions (
+        role_id INT NOT NULL,
+        permission_id INT NOT NULL,
+        PRIMARY KEY(role_id, permission_id)
+    )"
+);
+
+mysqli_query(
+    $conn,
+    "CREATE TABLE IF NOT EXISTS admin_roles (
+        admin_id INT NOT NULL,
+        role_id INT NOT NULL,
+        PRIMARY KEY(admin_id, role_id)
+    )"
+);
+
+mysqli_query(
+    $conn,
+    "CREATE TABLE IF NOT EXISTS user_roles (
+        user_id INT NOT NULL,
+        role_id INT NOT NULL,
+        PRIMARY KEY(user_id, role_id)
+    )"
+);
+
+$campus_permissions = [
+    "dashboard.view" => "View the admin dashboard",
+    "users.verify" => "Review and update student verification",
+    "products.moderate" => "Approve or reject product listings",
+    "products.feature" => "Feature or unfeature products",
+    "reports.review" => "Review reports and act on reported products",
+    "payments.review" => "Approve or reject payment records",
+    "notices.manage" => "Create and delete notices",
+    "roles.manage" => "Manage admin roles and permissions"
+];
+
+foreach($campus_permissions as $permission_name => $permission_description){
+    campus_seed_permission($conn, $permission_name, $permission_description);
+}
+
+$super_role_name = mysqli_real_escape_string($conn, "Super Admin");
+$super_role_description = mysqli_real_escape_string(
+    $conn,
+    "Full access to every admin permission"
+);
+
+mysqli_query(
+    $conn,
+    "INSERT INTO roles(name, description)
+     VALUES('$super_role_name', '$super_role_description')
+     ON DUPLICATE KEY UPDATE description=VALUES(description)"
+);
+
+$super_role_result = mysqli_query(
+    $conn,
+    "SELECT id FROM roles WHERE name='$super_role_name' LIMIT 1"
+);
+$super_role = $super_role_result ? mysqli_fetch_assoc($super_role_result) : null;
+
+if($super_role){
+    $super_role_id = (int)$super_role['id'];
+    mysqli_query(
+        $conn,
+        "INSERT IGNORE INTO role_permissions(role_id, permission_id)
+         SELECT '$super_role_id', id FROM permissions"
+    );
+}
+
 $admin_check = mysqli_query($conn, "SELECT id FROM admins LIMIT 1");
 
 if($admin_check && mysqli_num_rows($admin_check) == 0){
@@ -183,6 +346,16 @@ if($admin_check && mysqli_num_rows($admin_check) == 0){
         $conn,
         "INSERT INTO admins(username,password)
          VALUES('admin','$default_admin_password')"
+    );
+}
+
+if($super_role){
+    $super_role_id = (int)$super_role['id'];
+    mysqli_query(
+        $conn,
+        "INSERT IGNORE INTO admin_roles(admin_id, role_id)
+         SELECT id, '$super_role_id' FROM admins
+         WHERE id NOT IN (SELECT admin_id FROM admin_roles)"
     );
 }
 

@@ -7,6 +7,8 @@ if(!isset($_SESSION['admin_id'])){
     exit();
 }
 
+campus_require_admin_permission($conn, "users.verify");
+
 if(!isset($_GET['id']) || !isset($_GET['status'])){
     die("Invalid Request");
 }

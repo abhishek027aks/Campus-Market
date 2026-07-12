@@ -7,6 +7,8 @@ if(!isset($_SESSION['admin_id'])){
     exit();
 }
 
+campus_require_admin_permission($conn, "users.verify");
+
 $status = "";
 
 if(isset($_GET['status']) && $_GET['status'] != ""){

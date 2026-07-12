@@ -7,6 +7,8 @@ if(!isset($_SESSION['admin_id'])){
     exit();
 }
 
+campus_require_admin_permission($conn, "reports.review");
+
 if(!isset($_POST['id'], $_POST['status'])){
     die("Invalid Request");
 }

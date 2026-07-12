@@ -7,6 +7,8 @@ if(!isset($_SESSION['admin_id'])){
     exit();
 }
 
+campus_require_admin_permission($conn, "notices.manage");
+
 $allowed_categories = ["Exam", "Placement", "College Update"];
 $error = "";
 

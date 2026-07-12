@@ -7,6 +7,8 @@ if(!isset($_SESSION['admin_id'])){
     exit();
 }
 
+campus_require_admin_permission($conn, "products.feature");
+
 if(!isset($_POST['id'], $_POST['featured'])){
     die("Invalid Request");
 }

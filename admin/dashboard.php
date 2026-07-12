@@ -7,6 +7,8 @@ if(!isset($_SESSION['admin_id'])){
     exit();
 }
 
+campus_require_admin_permission($conn, "dashboard.view");
+
 $users_count = mysqli_fetch_assoc(
     mysqli_query($conn, "SELECT COUNT(*) AS total FROM users")
 );
@@ -37,6 +39,10 @@ $pending_payments_count = mysqli_fetch_assoc(
 
 $pending_reports_count = mysqli_fetch_assoc(
     mysqli_query($conn, "SELECT COUNT(*) AS total FROM product_reports WHERE status='Pending'")
+);
+
+$roles_count = mysqli_fetch_assoc(
+    mysqli_query($conn, "SELECT COUNT(*) AS total FROM roles")
 );
 ?>
 
@@ -231,6 +237,11 @@ body{
             <h2><?php echo (int)$pending_reports_count['total']; ?></h2>
             <p>Product Reports</p>
         </div>
+
+        <div class="stat-card">
+            <h2><?php echo (int)$roles_count['total']; ?></h2>
+            <p>Configured Roles</p>
+        </div>
     </div>
 
     <div class="section-grid">
@@ -257,6 +268,14 @@ body{
             <div class="actions">
                 <a class="admin-btn warning" href="payments.php">Review Payments</a>
                 <a class="admin-btn secondary" href="notices.php">Manage Notices</a>
+            </div>
+        </section>
+
+        <section class="section-card">
+            <h2>Access Control</h2>
+            <p>Create roles and assign permissions for the ERP modules.</p>
+            <div class="actions">
+                <a class="admin-btn secondary" href="roles.php">Roles & Permissions</a>
             </div>
         </section>
     </div>

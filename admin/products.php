@@ -7,6 +7,8 @@ if(!isset($_SESSION['admin_id'])){
     exit();
 }
 
+campus_require_admin_permission($conn, "products.moderate");
+
 $allowed_statuses = ["Pending", "Approved", "Rejected"];
 $status = isset($_GET['status']) ? $_GET['status'] : "";
 

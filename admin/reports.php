@@ -7,6 +7,8 @@ if(!isset($_SESSION['admin_id'])){
     exit();
 }
 
+campus_require_admin_permission($conn, "reports.review");
+
 $allowed_statuses = ["Pending", "Reviewed"];
 $status = isset($_GET['status']) ? $_GET['status'] : "";
 
