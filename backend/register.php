@@ -18,30 +18,37 @@ if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
     die("Invalid Email");
 }
 
-$safe_email = mysqli_real_escape_string($conn, $email);
-$check = mysqli_query($conn, "SELECT id FROM users WHERE email='$safe_email' LIMIT 1");
+$check_stmt = mysqli_prepare($conn, "SELECT id FROM users WHERE email=? LIMIT 1");
+mysqli_stmt_bind_param($check_stmt, "s", $email);
+mysqli_stmt_execute($check_stmt);
+$check = mysqli_stmt_get_result($check_stmt);
 
 if($check && mysqli_num_rows($check) > 0){
     die("Email already registered");
 }
 
-$safe_fullname = mysqli_real_escape_string($conn, $fullname);
 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-$safe_password = mysqli_real_escape_string($conn, $hashed_password);
 
-$sql = "INSERT INTO users(fullname,email,password,email_verified)
-        VALUES('$safe_fullname','$safe_email','$safe_password',0)";
+$insert_stmt = mysqli_prepare(
+    $conn,
+    "INSERT INTO users(fullname,email,password,email_verified)
+     VALUES(?,?,?,0)"
+);
 
-if(mysqli_query($conn, $sql)){
+mysqli_stmt_bind_param($insert_stmt, "sss", $fullname, $email, $hashed_password);
+
+if(mysqli_stmt_execute($insert_stmt)){
     $user_id = (int)mysqli_insert_id($conn);
     $token = bin2hex(random_bytes(32));
-    $token_hash = mysqli_real_escape_string($conn, hash("sha256", $token));
+    $token_hash = hash("sha256", $token);
 
-    mysqli_query(
+    $verify_stmt = mysqli_prepare(
         $conn,
         "INSERT INTO email_verifications(user_id, token_hash, expires_at)
-         VALUES('$user_id', '$token_hash', DATE_ADD(NOW(), INTERVAL 24 HOUR))"
+         VALUES(?, ?, DATE_ADD(NOW(), INTERVAL 24 HOUR))"
     );
+    mysqli_stmt_bind_param($verify_stmt, "is", $user_id, $token_hash);
+    mysqli_stmt_execute($verify_stmt);
 
     $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "localhost";
     $path = dirname(dirname($_SERVER['SCRIPT_NAME'])) . "/frontend/verify-email.php?token=$token";

@@ -14,7 +14,7 @@ if(!isset($_POST['submit_report'])){
 $reporter_id = (int)$_SESSION['user_id'];
 $product_id = (int)$_POST['product_id'];
 $reason = $_POST['reason'];
-$description = mysqli_real_escape_string($conn, trim($_POST['description']));
+$description = trim($_POST['description']);
 
 $allowed_reasons = [
     "Fake Product",
@@ -32,13 +32,16 @@ if($description === ""){
     die("Description is required");
 }
 
-$product_result = mysqli_query(
+$product_stmt = mysqli_prepare(
     $conn,
     "SELECT id, seller_id
      FROM products
-     WHERE id='$product_id'
+     WHERE id=?
      AND approval_status='Approved'"
 );
+mysqli_stmt_bind_param($product_stmt, "i", $product_id);
+mysqli_stmt_execute($product_stmt);
+$product_result = mysqli_stmt_get_result($product_stmt);
 $product = $product_result ? mysqli_fetch_assoc($product_result) : null;
 
 if(!$product){
@@ -50,14 +53,28 @@ if((int)$product['seller_id'] === $reporter_id){
 }
 
 $seller_id = (int)$product['seller_id'];
-$safe_reason = mysqli_real_escape_string($conn, $reason);
+$report_status = "Pending";
 
-$sql = "INSERT INTO product_reports
-        (product_id, reporter_id, seller_id, reason, description, status)
-        VALUES
-        ('$product_id', '$reporter_id', '$seller_id', '$safe_reason', '$description', 'Pending')";
+$report_stmt = mysqli_prepare(
+    $conn,
+    "INSERT INTO product_reports
+     (product_id, reporter_id, seller_id, reason, description, status)
+     VALUES
+     (?, ?, ?, ?, ?, ?)"
+);
 
-if(mysqli_query($conn, $sql)){
+mysqli_stmt_bind_param(
+    $report_stmt,
+    "iiisss",
+    $product_id,
+    $reporter_id,
+    $seller_id,
+    $reason,
+    $description,
+    $report_status
+);
+
+if(mysqli_stmt_execute($report_stmt)){
     header("Location: ../frontend/product-details.php?id=$product_id&reported=1");
     exit();
 }

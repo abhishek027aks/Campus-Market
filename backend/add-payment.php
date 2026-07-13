@@ -14,7 +14,7 @@ if(!isset($_POST['submit_payment'])){
 $buyer_id = (int)$_SESSION['user_id'];
 $product_id = (int)$_POST['product_id'];
 $payment_method = $_POST['payment_method'];
-$transaction_id = mysqli_real_escape_string($conn, trim($_POST['transaction_id']));
+$transaction_id = trim($_POST['transaction_id']);
 $allowed_methods = ["UPI", "PhonePe", "Paytm", "Google Pay"];
 
 if(!in_array($payment_method, $allowed_methods, true)){
@@ -25,13 +25,16 @@ if($transaction_id === ""){
     die("Transaction ID is required");
 }
 
-$product_result = mysqli_query(
+$product_stmt = mysqli_prepare(
     $conn,
     "SELECT id, title, price, seller_id
      FROM products
-     WHERE id='$product_id'
+     WHERE id=?
      AND approval_status='Approved'"
 );
+mysqli_stmt_bind_param($product_stmt, "i", $product_id);
+mysqli_stmt_execute($product_stmt);
+$product_result = mysqli_stmt_get_result($product_stmt);
 $product = $product_result ? mysqli_fetch_assoc($product_result) : null;
 
 if(!$product){
@@ -43,28 +46,50 @@ if((int)$product['seller_id'] === $buyer_id){
 }
 
 $seller_id = (int)$product['seller_id'];
-$amount = mysqli_real_escape_string($conn, $product['price']);
-$safe_method = mysqli_real_escape_string($conn, $payment_method);
+$amount = (float)$product['price'];
 
-$sql = "INSERT INTO payments
-        (product_id, buyer_id, seller_id, amount, payment_method, transaction_id, status)
-        VALUES
-        ('$product_id', '$buyer_id', '$seller_id', '$amount', '$safe_method', '$transaction_id', 'Pending')";
+$payment_status = "Pending";
+$payment_stmt = mysqli_prepare(
+    $conn,
+    "INSERT INTO payments
+     (product_id, buyer_id, seller_id, amount, payment_method, transaction_id, status)
+     VALUES
+     (?, ?, ?, ?, ?, ?, ?)"
+);
 
-if(mysqli_query($conn, $sql)){
-    $title = mysqli_real_escape_string($conn, $product['title']);
+mysqli_stmt_bind_param(
+    $payment_stmt,
+    "iiidsss",
+    $product_id,
+    $buyer_id,
+    $seller_id,
+    $amount,
+    $payment_method,
+    $transaction_id,
+    $payment_status
+);
 
-    mysqli_query(
+if(mysqli_stmt_execute($payment_stmt)){
+    $notification_type = "payment_pending";
+    $notification_title = "Payment Submitted";
+    $notification_message = "A buyer submitted payment proof for " . $product['title'] . ".";
+    $notification_link = "my-products.php";
+
+    $notification_stmt = mysqli_prepare(
         $conn,
         "INSERT INTO notifications(user_id, type, title, message, link)
-         VALUES(
-            '$seller_id',
-            'payment_pending',
-            'Payment Submitted',
-            'A buyer submitted payment proof for $title.',
-            'my-products.php'
-         )"
+         VALUES(?, ?, ?, ?, ?)"
     );
+    mysqli_stmt_bind_param(
+        $notification_stmt,
+        "issss",
+        $seller_id,
+        $notification_type,
+        $notification_title,
+        $notification_message,
+        $notification_link
+    );
+    mysqli_stmt_execute($notification_stmt);
 
     header("Location: ../frontend/my-payments.php");
     exit();

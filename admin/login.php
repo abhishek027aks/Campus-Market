@@ -10,14 +10,18 @@ if(isset($_SESSION['admin_id'])){
 $error = "";
 
 if(isset($_POST['admin_login'])){
-    $username = mysqli_real_escape_string($conn, trim($_POST['username']));
+    $username = trim($_POST['username']);
     $password = trim($_POST['password']);
 
-    $sql = "SELECT * FROM admins
-            WHERE username='$username'
-            LIMIT 1";
-
-    $result = mysqli_query($conn, $sql);
+    $stmt = mysqli_prepare(
+        $conn,
+        "SELECT * FROM admins
+         WHERE username=?
+         LIMIT 1"
+    );
+    mysqli_stmt_bind_param($stmt, "s", $username);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
 
     if($result && mysqli_num_rows($result) > 0){
         $admin = mysqli_fetch_assoc($result);
@@ -29,12 +33,11 @@ if(isset($_POST['admin_login'])){
             $password_info = password_get_info($admin['password']);
 
             if(!isset($password_info['algoName']) || $password_info['algoName'] === "unknown"){
-                $new_hash = mysqli_real_escape_string(
-                    $conn,
-                    password_hash($password, PASSWORD_DEFAULT)
-                );
+                $new_hash = password_hash($password, PASSWORD_DEFAULT);
                 $admin_id = (int)$admin['id'];
-                mysqli_query($conn, "UPDATE admins SET password='$new_hash' WHERE id='$admin_id'");
+                $update_stmt = mysqli_prepare($conn, "UPDATE admins SET password=? WHERE id=?");
+                mysqli_stmt_bind_param($update_stmt, "si", $new_hash, $admin_id);
+                mysqli_stmt_execute($update_stmt);
             }
 
             header("Location: dashboard.php");

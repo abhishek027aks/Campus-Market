@@ -41,50 +41,24 @@ if(isset($_POST['update_product'])){
     $fileType = $product['file_type'];
     $previewImage = $product['preview_image'];
     $previewFile = $product['preview_file'];
-    $uploadDir = "../frontend/uploads/";
+    $uploadDir = __DIR__ . "/../frontend/uploads";
 
     $allowedMain = ["jpg", "jpeg", "png", "pdf", "docx", "pptx", "mp4"];
     $allowedPreviewImage = ["jpg", "jpeg", "png"];
     $allowedPreviewFile = ["jpg", "jpeg", "png", "pdf", "mp4"];
 
     if(isset($_FILES['file']) && $_FILES['file']['error'] == 0){
-        $newFile = time().'_'.basename($_FILES['file']['name']);
-        $newExt = strtolower(pathinfo($newFile, PATHINFO_EXTENSION));
-
-        if(!in_array($newExt, $allowedMain)){
-            die("Invalid Main File Type");
-        }
-
-        if(move_uploaded_file($_FILES['file']['tmp_name'], $uploadDir.$newFile)){
-            $fileName = $newFile;
-            $fileType = $newExt;
-        }
+        $newFile = campus_save_uploaded_file($_FILES['file'], $uploadDir, "product", $allowedMain, false);
+        $fileName = $newFile;
+        $fileType = strtolower(pathinfo($newFile, PATHINFO_EXTENSION));
     }
 
     if(isset($_FILES['preview_image']) && $_FILES['preview_image']['error'] == 0){
-        $newPreviewImage = time().'_preview_image_'.basename($_FILES['preview_image']['name']);
-        $newPreviewImageExt = strtolower(pathinfo($newPreviewImage, PATHINFO_EXTENSION));
-
-        if(!in_array($newPreviewImageExt, $allowedPreviewImage)){
-            die("Invalid Thumbnail Type");
-        }
-
-        if(move_uploaded_file($_FILES['preview_image']['tmp_name'], $uploadDir.$newPreviewImage)){
-            $previewImage = $newPreviewImage;
-        }
+        $previewImage = campus_save_uploaded_file($_FILES['preview_image'], $uploadDir, "preview_image", $allowedPreviewImage, false);
     }
 
     if(isset($_FILES['preview_file']) && $_FILES['preview_file']['error'] == 0){
-        $newPreviewFile = time().'_preview_file_'.basename($_FILES['preview_file']['name']);
-        $newPreviewFileExt = strtolower(pathinfo($newPreviewFile, PATHINFO_EXTENSION));
-
-        if(!in_array($newPreviewFileExt, $allowedPreviewFile)){
-            die("Invalid Preview File Type");
-        }
-
-        if(move_uploaded_file($_FILES['preview_file']['tmp_name'], $uploadDir.$newPreviewFile)){
-            $previewFile = $newPreviewFile;
-        }
+        $previewFile = campus_save_uploaded_file($_FILES['preview_file'], $uploadDir, "preview_file", $allowedPreviewFile, false);
     }
 
     $sql = "UPDATE products

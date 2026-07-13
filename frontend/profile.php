@@ -33,30 +33,24 @@ if(isset($_POST['update_profile'])){
     $allowedIdCard = ["jpg", "jpeg", "png", "pdf"];
 
     if(isset($_FILES['profile_photo']) && $_FILES['profile_photo']['error'] == 0){
-        $profile_photo_name = time()."_profile_".basename($_FILES['profile_photo']['name']);
-        $profile_ext = strtolower(pathinfo($profile_photo_name, PATHINFO_EXTENSION));
-
-        if(!in_array($profile_ext, $allowedProfile)){
-            die("Invalid Profile Photo Type");
-        }
-
-        if(move_uploaded_file($_FILES['profile_photo']['tmp_name'], $serverUploadDir.$profile_photo_name)){
-            $profile_photo = $profile_photo_name;
-        }
+        $profile_photo = campus_save_uploaded_file(
+            $_FILES['profile_photo'],
+            $serverUploadDir,
+            "profile",
+            $allowedProfile,
+            false
+        );
     }
 
     if(isset($_FILES['college_id_card']) && $_FILES['college_id_card']['error'] == 0){
-        $college_id_name = time()."_college_id_".basename($_FILES['college_id_card']['name']);
-        $college_id_ext = strtolower(pathinfo($college_id_name, PATHINFO_EXTENSION));
-
-        if(!in_array($college_id_ext, $allowedIdCard)){
-            die("Invalid College ID Card Type");
-        }
-
-        if(move_uploaded_file($_FILES['college_id_card']['tmp_name'], $serverUploadDir.$college_id_name)){
-            $college_id_card = $college_id_name;
-            $verification_status = "Pending";
-        }
+        $college_id_card = campus_save_uploaded_file(
+            $_FILES['college_id_card'],
+            $serverUploadDir,
+            "college_id",
+            $allowedIdCard,
+            false
+        );
+        $verification_status = "Pending";
     }
 
     $profile_photo = mysqli_real_escape_string($conn, $profile_photo);

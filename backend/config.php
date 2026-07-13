@@ -45,6 +45,60 @@ if(!function_exists("campus_password_matches")){
     }
 }
 
+if(!function_exists("campus_save_uploaded_file")){
+    function campus_save_uploaded_file($file, $upload_dir, $prefix, $allowed_extensions, $required = false){
+        if(!isset($file) || !isset($file['error']) || $file['error'] === UPLOAD_ERR_NO_FILE){
+            if($required){
+                die("Please select file");
+            }
+
+            return "";
+        }
+
+        if($file['error'] !== UPLOAD_ERR_OK){
+            die("File upload failed");
+        }
+
+        $max_size = 50 * 1024 * 1024;
+
+        if((int)$file['size'] > $max_size){
+            die("File is too large");
+        }
+
+        $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+        if(!in_array($extension, $allowed_extensions, true)){
+            die("Invalid File Type");
+        }
+
+        if(in_array($extension, ["jpg", "jpeg", "png"], true) && getimagesize($file['tmp_name']) === false){
+            die("Invalid image file");
+        }
+
+        $base_name = pathinfo(basename($file['name']), PATHINFO_FILENAME);
+        $base_name = preg_replace("/[^A-Za-z0-9._-]/", "_", $base_name);
+        $base_name = trim($base_name, "._-");
+
+        if($base_name === ""){
+            $base_name = "file";
+        }
+
+        $safe_prefix = preg_replace("/[^A-Za-z0-9_-]/", "_", $prefix);
+        $new_name = time() . "_" . bin2hex(random_bytes(4)) . "_" . $safe_prefix . "_" . $base_name . "." . $extension;
+        $target_dir = rtrim($upload_dir, "/\\") . DIRECTORY_SEPARATOR;
+
+        if(!is_dir($target_dir)){
+            die("Upload folder not found");
+        }
+
+        if(!move_uploaded_file($file['tmp_name'], $target_dir . $new_name)){
+            die("File upload failed");
+        }
+
+        return $new_name;
+    }
+}
+
 if(!function_exists("campus_seed_permission")){
     function campus_seed_permission($conn, $name, $description){
         $safe_name = mysqli_real_escape_string($conn, $name);

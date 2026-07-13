@@ -57,21 +57,6 @@ if(isset($_POST['add_product'])){
         die("Please Select File");
     }
 
-    $file_name =
-        time().'_'.
-        basename($_FILES['file']['name']);
-
-    $tmp_name =
-        $_FILES['file']['tmp_name'];
-
-    $file_extension =
-        strtolower(
-            pathinfo(
-                $file_name,
-                PATHINFO_EXTENSION
-            )
-        );
-
     $allowed = [
         "jpg",
         "jpeg",
@@ -82,14 +67,15 @@ if(isset($_POST['add_product'])){
         "mp4"
     ];
 
-    if(!in_array($file_extension,$allowed)){
-        die("Invalid File Type");
-    }
-
-    move_uploaded_file(
-        $tmp_name,
-        "../frontend/uploads/".$file_name
+    $file_name = campus_save_uploaded_file(
+        $_FILES['file'],
+        __DIR__ . "/../frontend/uploads",
+        "product",
+        $allowed,
+        true
     );
+
+    $file_extension = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
 
     /* =========================
        PREVIEW IMAGE
@@ -102,17 +88,12 @@ if(isset($_POST['add_product'])){
         $_FILES['preview_image']['error'] == 0
     ){
 
-        $preview_image =
-            time().
-            "_preview_image_".
-            basename(
-                $_FILES['preview_image']['name']
-            );
-
-        move_uploaded_file(
-            $_FILES['preview_image']['tmp_name'],
-            "../frontend/uploads/".
-            $preview_image
+        $preview_image = campus_save_uploaded_file(
+            $_FILES['preview_image'],
+            __DIR__ . "/../frontend/uploads",
+            "preview_image",
+            ["jpg", "jpeg", "png"],
+            false
         );
     }
 
@@ -127,17 +108,12 @@ if(isset($_POST['add_product'])){
         $_FILES['preview_file']['error'] == 0
     ){
 
-        $preview_file =
-            time().
-            "_preview_file_".
-            basename(
-                $_FILES['preview_file']['name']
-            );
-
-        move_uploaded_file(
-            $_FILES['preview_file']['tmp_name'],
-            "../frontend/uploads/".
-            $preview_file
+        $preview_file = campus_save_uploaded_file(
+            $_FILES['preview_file'],
+            __DIR__ . "/../frontend/uploads",
+            "preview_file",
+            ["jpg", "jpeg", "png", "pdf", "mp4"],
+            false
         );
     }
 

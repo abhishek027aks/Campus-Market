@@ -31,18 +31,12 @@ if($title === "" || $description === "" || $location === "" || $contact === ""){
 $image = "";
 
 if(isset($_FILES['image']) && $_FILES['image']['error'] == 0){
-    $extension = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
-    $allowed_images = ["jpg", "jpeg", "png"];
-
-    if(!in_array($extension, $allowed_images, true)){
-        die("Only JPG, JPEG and PNG images are allowed");
-    }
-
-    $image = time() . "_lost_found_" . basename($_FILES['image']['name']);
-
-    move_uploaded_file(
-        $_FILES['image']['tmp_name'],
-        "../frontend/uploads/" . $image
+    $image = campus_save_uploaded_file(
+        $_FILES['image'],
+        __DIR__ . "/../frontend/uploads",
+        "lost_found",
+        ["jpg", "jpeg", "png"],
+        false
     );
 }
 
