@@ -14,7 +14,7 @@ if(!isset($_POST['submit_review'])){
 $user_id = (int)$_SESSION['user_id'];
 $product_id = (int)$_POST['product_id'];
 $rating = (int)$_POST['rating'];
-$comment = mysqli_real_escape_string($conn, trim($_POST['comment']));
+$comment = trim($_POST['comment']);
 
 if($product_id <= 0){
     die("Invalid Product");
@@ -28,24 +28,32 @@ if($comment == ""){
     die("Comment is required");
 }
 
-$product_check = mysqli_query(
+$product_stmt = mysqli_prepare(
     $conn,
     "SELECT id FROM products
-     WHERE id='$product_id'
+     WHERE id=?
      AND approval_status='Approved'"
 );
+mysqli_stmt_bind_param($product_stmt, "i", $product_id);
+mysqli_stmt_execute($product_stmt);
+$product_check = mysqli_stmt_get_result($product_stmt);
 
 if(!$product_check || mysqli_num_rows($product_check) == 0){
     die("Product Not Found");
 }
 
-$sql = "INSERT INTO product_reviews(user_id, product_id, rating, comment)
-        VALUES('$user_id', '$product_id', '$rating', '$comment')
-        ON DUPLICATE KEY UPDATE
-        rating='$rating',
-        comment='$comment'";
+$review_stmt = mysqli_prepare(
+    $conn,
+    "INSERT INTO product_reviews(user_id, product_id, rating, comment)
+     VALUES(?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE
+     rating=VALUES(rating),
+     comment=VALUES(comment)"
+);
 
-if(mysqli_query($conn, $sql)){
+mysqli_stmt_bind_param($review_stmt, "iiis", $user_id, $product_id, $rating, $comment);
+
+if(mysqli_stmt_execute($review_stmt)){
     header("Location: ../frontend/product-details.php?id=".$product_id."#reviews");
     exit();
 }else{

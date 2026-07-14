@@ -14,29 +14,34 @@ if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
     exit();
 }
 
-$safe_email = mysqli_real_escape_string($conn, $email);
-$result = mysqli_query($conn, "SELECT id, email FROM users WHERE email='$safe_email' LIMIT 1");
+$user_stmt = mysqli_prepare($conn, "SELECT id, email FROM users WHERE email=? LIMIT 1");
+mysqli_stmt_bind_param($user_stmt, "s", $email);
+mysqli_stmt_execute($user_stmt);
+$result = mysqli_stmt_get_result($user_stmt);
 $user = $result ? mysqli_fetch_assoc($result) : null;
 
 if($user){
     $user_id = (int)$user['id'];
     $token = bin2hex(random_bytes(32));
     $token_hash = hash("sha256", $token);
-    $safe_token_hash = mysqli_real_escape_string($conn, $token_hash);
 
-    mysqli_query(
+    $expire_stmt = mysqli_prepare(
         $conn,
         "UPDATE password_resets
          SET used_at=NOW()
-         WHERE user_id='$user_id'
+         WHERE user_id=?
          AND used_at IS NULL"
     );
+    mysqli_stmt_bind_param($expire_stmt, "i", $user_id);
+    mysqli_stmt_execute($expire_stmt);
 
-    mysqli_query(
+    $insert_stmt = mysqli_prepare(
         $conn,
         "INSERT INTO password_resets(user_id, token_hash, expires_at)
-         VALUES('$user_id', '$safe_token_hash', DATE_ADD(NOW(), INTERVAL 30 MINUTE))"
+         VALUES(?, ?, DATE_ADD(NOW(), INTERVAL 30 MINUTE))"
     );
+    mysqli_stmt_bind_param($insert_stmt, "is", $user_id, $token_hash);
+    mysqli_stmt_execute($insert_stmt);
 
     $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : "localhost";
     $path = dirname(dirname($_SERVER['SCRIPT_NAME'])) . "/frontend/reset-password.php?token=$token";

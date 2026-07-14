@@ -28,17 +28,20 @@ if(strlen($password) < 6){
     exit();
 }
 
-$token_hash = mysqli_real_escape_string($conn, hash("sha256", $token));
+$token_hash = hash("sha256", $token);
 
-$reset_result = mysqli_query(
+$reset_stmt = mysqli_prepare(
     $conn,
     "SELECT * FROM password_resets
-     WHERE token_hash='$token_hash'
+     WHERE token_hash=?
      AND used_at IS NULL
      AND expires_at > NOW()
      ORDER BY id DESC
      LIMIT 1"
 );
+mysqli_stmt_bind_param($reset_stmt, "s", $token_hash);
+mysqli_stmt_execute($reset_stmt);
+$reset_result = mysqli_stmt_get_result($reset_stmt);
 $reset = $reset_result ? mysqli_fetch_assoc($reset_result) : null;
 
 if(!$reset){
@@ -49,13 +52,15 @@ if(!$reset){
 
 $user_id = (int)$reset['user_id'];
 $reset_id = (int)$reset['id'];
-$safe_password = mysqli_real_escape_string(
-    $conn,
-    password_hash($password, PASSWORD_DEFAULT)
-);
+$safe_password = password_hash($password, PASSWORD_DEFAULT);
 
-mysqli_query($conn, "UPDATE users SET password='$safe_password' WHERE id='$user_id'");
-mysqli_query($conn, "UPDATE password_resets SET used_at=NOW() WHERE id='$reset_id'");
+$user_stmt = mysqli_prepare($conn, "UPDATE users SET password=? WHERE id=?");
+mysqli_stmt_bind_param($user_stmt, "si", $safe_password, $user_id);
+mysqli_stmt_execute($user_stmt);
+
+$used_stmt = mysqli_prepare($conn, "UPDATE password_resets SET used_at=NOW() WHERE id=?");
+mysqli_stmt_bind_param($used_stmt, "i", $reset_id);
+mysqli_stmt_execute($used_stmt);
 
 header("Location: ../frontend/login.html?password_reset=1");
 exit();

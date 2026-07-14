@@ -14,14 +14,16 @@ if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
     exit();
 }
 
-$safe_email = mysqli_real_escape_string($conn, $email);
-$result = mysqli_query(
+$user_stmt = mysqli_prepare(
     $conn,
     "SELECT id, fullname, email_verified
      FROM users
-     WHERE email='$safe_email'
+     WHERE email=?
      LIMIT 1"
 );
+mysqli_stmt_bind_param($user_stmt, "s", $email);
+mysqli_stmt_execute($user_stmt);
+$result = mysqli_stmt_get_result($user_stmt);
 $user = $result ? mysqli_fetch_assoc($result) : null;
 
 if($user){
@@ -33,21 +35,25 @@ if($user){
 
     $user_id = (int)$user['id'];
     $otp = (string)random_int(100000, 999999);
-    $otp_hash = mysqli_real_escape_string($conn, password_hash($otp, PASSWORD_DEFAULT));
+    $otp_hash = password_hash($otp, PASSWORD_DEFAULT);
 
-    mysqli_query(
+    $expire_stmt = mysqli_prepare(
         $conn,
         "UPDATE login_otps
          SET used_at=NOW()
-         WHERE user_id='$user_id'
+         WHERE user_id=?
          AND used_at IS NULL"
     );
+    mysqli_stmt_bind_param($expire_stmt, "i", $user_id);
+    mysqli_stmt_execute($expire_stmt);
 
-    mysqli_query(
+    $insert_stmt = mysqli_prepare(
         $conn,
         "INSERT INTO login_otps(user_id, otp_hash, expires_at)
-         VALUES('$user_id', '$otp_hash', DATE_ADD(NOW(), INTERVAL 10 MINUTE))"
+         VALUES(?, ?, DATE_ADD(NOW(), INTERVAL 10 MINUTE))"
     );
+    mysqli_stmt_bind_param($insert_stmt, "is", $user_id, $otp_hash);
+    mysqli_stmt_execute($insert_stmt);
 
     $_SESSION['otp_login_user_id'] = $user_id;
 
