@@ -14,14 +14,20 @@ if(!isset($_GET['product_id'])){
 $product_id = (int)$_GET['product_id'];
 $user_id = (int)$_SESSION['user_id'];
 
-$result = mysqli_query(
+$stmt = mysqli_prepare(
     $conn,
     "SELECT products.*, users.fullname
      FROM products
      JOIN users ON products.seller_id = users.id
-     WHERE products.id='$product_id'
+     WHERE products.id=?
      AND products.approval_status='Approved'"
 );
+$result = false;
+if($stmt){
+    mysqli_stmt_bind_param($stmt, "i", $product_id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+}
 $product = $result ? mysqli_fetch_assoc($result) : null;
 
 if(!$product){

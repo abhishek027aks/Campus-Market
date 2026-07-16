@@ -7,12 +7,18 @@ if(!isset($_GET['id'])){
 
 $id = (int)$_GET['id'];
 
-$result = mysqli_query(
+$stmt = mysqli_prepare(
     $conn,
     "SELECT id, image, title, approval_status
      FROM products
-     WHERE id='$id'"
+     WHERE id=?"
 );
+$result = false;
+if($stmt){
+    mysqli_stmt_bind_param($stmt, "i", $id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+}
 $product = $result ? mysqli_fetch_assoc($result) : null;
 
 if(!$product || empty($product['image'])){
@@ -27,10 +33,12 @@ if(!is_file($file_path)){
 }
 
 if($product['approval_status'] == "Approved"){
-    mysqli_query(
+    $download_stmt = mysqli_prepare(
         $conn,
-        "UPDATE products SET downloads = downloads + 1 WHERE id='$id'"
+        "UPDATE products SET downloads = downloads + 1 WHERE id=?"
     );
+    mysqli_stmt_bind_param($download_stmt, "i", $id);
+    mysqli_stmt_execute($download_stmt);
 }
 
 header("Content-Description: File Transfer");

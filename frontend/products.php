@@ -16,24 +16,37 @@ $sql = "SELECT products.*,
             GROUP BY product_id
         ) AS review_summary ON products.id = review_summary.product_id
         WHERE products.approval_status='Approved'";
+$params = [];
+$types = "";
 
 if(isset($_GET['search']) && !empty($_GET['search'])){
-    $search = mysqli_real_escape_string($conn,$_GET['search']);
+    $search = trim($_GET['search']);
+    $search_like = "%".$search."%";
 
     $sql .= " AND (
-        products.title LIKE '%$search%'
-        OR products.description LIKE '%$search%'
+        products.title LIKE ?
+        OR products.description LIKE ?
     )";
+    $params[] = $search_like;
+    $params[] = $search_like;
+    $types .= "ss";
 }
 
 if(isset($_GET['category']) && !empty($_GET['category'])){
-    $category = mysqli_real_escape_string($conn,$_GET['category']);
-    $sql .= " AND products.category='$category'";
+    $category = trim($_GET['category']);
+    $sql .= " AND products.category=?";
+    $params[] = $category;
+    $types .= "s";
 }
 
 $sql .= " ORDER BY products.is_featured DESC, products.id DESC";
 
-$result = mysqli_query($conn,$sql);
+$stmt = mysqli_prepare($conn, $sql);
+if(!empty($params)){
+    mysqli_stmt_bind_param($stmt, $types, ...$params);
+}
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
 
 $featured_sql = "SELECT products.*,
         COALESCE(review_summary.average_rating, 0) AS average_rating,
@@ -51,7 +64,9 @@ $featured_sql = "SELECT products.*,
         ORDER BY products.id DESC
         LIMIT 4";
 
-$featured_result = mysqli_query($conn, $featured_sql);
+$featured_stmt = mysqli_prepare($conn, $featured_sql);
+mysqli_stmt_execute($featured_stmt);
+$featured_result = mysqli_stmt_get_result($featured_stmt);
 ?>
 
 <!DOCTYPE html>

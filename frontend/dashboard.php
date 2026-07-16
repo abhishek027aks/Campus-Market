@@ -9,15 +9,16 @@ if(!isset($_SESSION['user_id'])){
 
 $user_id = (int)$_SESSION['user_id'];
 
-$notification_count = mysqli_fetch_assoc(
-    mysqli_query(
-        $conn,
-        "SELECT COUNT(*) AS total
-         FROM notifications
-         WHERE user_id='$user_id'
-         AND is_read=0"
-    )
+$notification_stmt = mysqli_prepare(
+    $conn,
+    "SELECT COUNT(*) AS total
+     FROM notifications
+     WHERE user_id=?
+     AND is_read=0"
 );
+mysqli_stmt_bind_param($notification_stmt, "i", $user_id);
+mysqli_stmt_execute($notification_stmt);
+$notification_count = mysqli_fetch_assoc(mysqli_stmt_get_result($notification_stmt));
 ?>
 
 <!DOCTYPE html>

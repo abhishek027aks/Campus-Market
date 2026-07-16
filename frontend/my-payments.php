@@ -9,14 +9,17 @@ if(!isset($_SESSION['user_id'])){
 
 $user_id = (int)$_SESSION['user_id'];
 
-$result = mysqli_query(
+$stmt = mysqli_prepare(
     $conn,
     "SELECT payments.*, products.title
      FROM payments
      JOIN products ON payments.product_id = products.id
-     WHERE payments.buyer_id='$user_id'
+     WHERE payments.buyer_id=?
      ORDER BY payments.id DESC"
 );
+mysqli_stmt_bind_param($stmt, "i", $user_id);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
 ?>
 
 <!DOCTYPE html>

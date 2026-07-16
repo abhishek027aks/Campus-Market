@@ -9,59 +9,79 @@ if(!isset($_SESSION['user_id'])){
 
 $user_id = (int)$_SESSION['user_id'];
 
-$summary_sql = "SELECT
-                COUNT(*) AS products_uploaded,
-                COALESCE(SUM(views), 0) AS total_views,
-                COALESCE(SUM(downloads), 0) AS total_downloads
-                FROM products
-                WHERE seller_id='$user_id'";
+$summary_stmt = mysqli_prepare(
+    $conn,
+    "SELECT
+     COUNT(*) AS products_uploaded,
+     COALESCE(SUM(views), 0) AS total_views,
+     COALESCE(SUM(downloads), 0) AS total_downloads
+     FROM products
+     WHERE seller_id=?"
+);
+mysqli_stmt_bind_param($summary_stmt, "i", $user_id);
+mysqli_stmt_execute($summary_stmt);
+$summary = mysqli_fetch_assoc(mysqli_stmt_get_result($summary_stmt));
 
-$summary = mysqli_fetch_assoc(mysqli_query($conn, $summary_sql));
+$wishlist_stmt = mysqli_prepare(
+    $conn,
+    "SELECT COUNT(*) AS total_wishlist
+     FROM wishlist
+     JOIN products ON wishlist.product_id = products.id
+     WHERE products.seller_id=?"
+);
+mysqli_stmt_bind_param($wishlist_stmt, "i", $user_id);
+mysqli_stmt_execute($wishlist_stmt);
+$wishlist = mysqli_fetch_assoc(mysqli_stmt_get_result($wishlist_stmt));
 
-$wishlist_sql = "SELECT COUNT(*) AS total_wishlist
-                 FROM wishlist
-                 JOIN products ON wishlist.product_id = products.id
-                 WHERE products.seller_id='$user_id'";
+$reviews_stmt = mysqli_prepare(
+    $conn,
+    "SELECT
+     COUNT(product_reviews.id) AS total_reviews,
+     COALESCE(AVG(product_reviews.rating), 0) AS average_rating
+     FROM product_reviews
+     JOIN products ON product_reviews.product_id = products.id
+     WHERE products.seller_id=?"
+);
+mysqli_stmt_bind_param($reviews_stmt, "i", $user_id);
+mysqli_stmt_execute($reviews_stmt);
+$reviews = mysqli_fetch_assoc(mysqli_stmt_get_result($reviews_stmt));
 
-$wishlist = mysqli_fetch_assoc(mysqli_query($conn, $wishlist_sql));
+$messages_stmt = mysqli_prepare(
+    $conn,
+    "SELECT COUNT(messages.id) AS total_messages
+     FROM messages
+     JOIN chats ON messages.chat_id = chats.id
+     WHERE chats.seller_id=?"
+);
+mysqli_stmt_bind_param($messages_stmt, "i", $user_id);
+mysqli_stmt_execute($messages_stmt);
+$messages = mysqli_fetch_assoc(mysqli_stmt_get_result($messages_stmt));
 
-$reviews_sql = "SELECT
-                COUNT(product_reviews.id) AS total_reviews,
-                COALESCE(AVG(product_reviews.rating), 0) AS average_rating
-                FROM product_reviews
-                JOIN products ON product_reviews.product_id = products.id
-                WHERE products.seller_id='$user_id'";
-
-$reviews = mysqli_fetch_assoc(mysqli_query($conn, $reviews_sql));
-
-$messages_sql = "SELECT COUNT(messages.id) AS total_messages
-                 FROM messages
-                 JOIN chats ON messages.chat_id = chats.id
-                 WHERE chats.seller_id='$user_id'";
-
-$messages = mysqli_fetch_assoc(mysqli_query($conn, $messages_sql));
-
-$products_sql = "SELECT products.*,
-                 COALESCE(wishlist_summary.total_wishlist, 0) AS wishlist_count,
-                 COALESCE(review_summary.total_reviews, 0) AS total_reviews,
-                 COALESCE(review_summary.average_rating, 0) AS average_rating
-                 FROM products
-                 LEFT JOIN (
-                    SELECT product_id, COUNT(*) AS total_wishlist
-                    FROM wishlist
-                    GROUP BY product_id
-                 ) AS wishlist_summary ON products.id = wishlist_summary.product_id
-                 LEFT JOIN (
-                    SELECT product_id,
-                    COUNT(*) AS total_reviews,
-                    AVG(rating) AS average_rating
-                    FROM product_reviews
-                    GROUP BY product_id
-                 ) AS review_summary ON products.id = review_summary.product_id
-                 WHERE products.seller_id='$user_id'
-                 ORDER BY products.views DESC";
-
-$products_result = mysqli_query($conn, $products_sql);
+$products_stmt = mysqli_prepare(
+    $conn,
+    "SELECT products.*,
+     COALESCE(wishlist_summary.total_wishlist, 0) AS wishlist_count,
+     COALESCE(review_summary.total_reviews, 0) AS total_reviews,
+     COALESCE(review_summary.average_rating, 0) AS average_rating
+     FROM products
+     LEFT JOIN (
+        SELECT product_id, COUNT(*) AS total_wishlist
+        FROM wishlist
+        GROUP BY product_id
+     ) AS wishlist_summary ON products.id = wishlist_summary.product_id
+     LEFT JOIN (
+        SELECT product_id,
+        COUNT(*) AS total_reviews,
+        AVG(rating) AS average_rating
+        FROM product_reviews
+        GROUP BY product_id
+     ) AS review_summary ON products.id = review_summary.product_id
+     WHERE products.seller_id=?
+     ORDER BY products.views DESC"
+);
+mysqli_stmt_bind_param($products_stmt, "i", $user_id);
+mysqli_stmt_execute($products_stmt);
+$products_result = mysqli_stmt_get_result($products_stmt);
 ?>
 
 <!DOCTYPE html>

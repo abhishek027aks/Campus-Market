@@ -9,14 +9,18 @@ if(!isset($_SESSION['user_id'])){
 
 $user_id = (int)$_SESSION['user_id'];
 
-$sql = "SELECT products.*, wishlist.created_at AS saved_at
-        FROM wishlist
-        JOIN products ON wishlist.product_id = products.id
-        WHERE wishlist.user_id='$user_id'
-        AND products.approval_status='Approved'
-        ORDER BY wishlist.id DESC";
-
-$result = mysqli_query($conn, $sql);
+$stmt = mysqli_prepare(
+    $conn,
+    "SELECT products.*, wishlist.created_at AS saved_at
+     FROM wishlist
+     JOIN products ON wishlist.product_id = products.id
+     WHERE wishlist.user_id=?
+     AND products.approval_status='Approved'
+     ORDER BY wishlist.id DESC"
+);
+mysqli_stmt_bind_param($stmt, "i", $user_id);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
 ?>
 
 <!DOCTYPE html>

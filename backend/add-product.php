@@ -9,43 +9,22 @@ if(!isset($_SESSION['user_id'])){
 
 if(isset($_POST['add_product'])){
 
-    $title = mysqli_real_escape_string(
-        $conn,
-        $_POST['title']
-    );
-
-    $description = mysqli_real_escape_string(
-        $conn,
-        $_POST['description']
-    );
-
-    $price = mysqli_real_escape_string(
-        $conn,
-        $_POST['price']
-    );
-
-    $category = mysqli_real_escape_string(
-        $conn,
-        $_POST['category']
-    );
+    $title = trim($_POST['title']);
+    $description = trim($_POST['description']);
+    $price = trim($_POST['price']);
+    $category = trim($_POST['category']);
 
     if(
         $category == "Others" &&
         isset($_POST['other_category']) &&
         !empty(trim($_POST['other_category']))
     ){
-        $category = mysqli_real_escape_string(
-            $conn,
-            trim($_POST['other_category'])
-        );
+        $category = trim($_POST['other_category']);
     }
 
-    $status = mysqli_real_escape_string(
-        $conn,
-        $_POST['status']
-    );
+    $status = trim($_POST['status']);
 
-    $seller_id = $_SESSION['user_id'];
+    $seller_id = (int)$_SESSION['user_id'];
 
     /* =========================
        MAIN FILE
@@ -121,36 +100,42 @@ if(isset($_POST['add_product'])){
        INSERT PRODUCT
     ========================= */
 
-    $sql = "INSERT INTO products
-    (
-        title,
-        description,
-        price,
-        image,
-        seller_id,
-        category,
-        status,
-        file_type,
-        preview_image,
-        preview_file,
-        approval_status
-    )
-    VALUES
-    (
-        '$title',
-        '$description',
-        '$price',
-        '$file_name',
-        '$seller_id',
-        '$category',
-        '$status',
-        '$file_extension',
-        '$preview_image',
-        '$preview_file',
-        'Pending'
-    )";
+    $approval_status = "Pending";
+    $stmt = mysqli_prepare(
+        $conn,
+        "INSERT INTO products
+         (
+            title,
+            description,
+            price,
+            image,
+            seller_id,
+            category,
+            status,
+            file_type,
+            preview_image,
+            preview_file,
+            approval_status
+         )
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    );
+    mysqli_stmt_bind_param(
+        $stmt,
+        "ssssissssss",
+        $title,
+        $description,
+        $price,
+        $file_name,
+        $seller_id,
+        $category,
+        $status,
+        $file_extension,
+        $preview_image,
+        $preview_file,
+        $approval_status
+    );
 
-    if(mysqli_query($conn,$sql)){
+    if(mysqli_stmt_execute($stmt)){
 
         header(
             "Location: ../frontend/my-products.php"
@@ -159,7 +144,7 @@ if(isset($_POST['add_product'])){
 
     }else{
 
-        echo mysqli_error($conn);
+        echo mysqli_stmt_error($stmt);
 
     }
 }

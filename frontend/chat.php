@@ -16,10 +16,15 @@ if(isset($_GET['chat_id'])){
 elseif(isset($_GET['product_id'])){
     $product_id = (int)$_GET['product_id'];
 
-    $product_sql = "SELECT * FROM products
-                    WHERE id='$product_id'
-                    AND approval_status='Approved'";
-    $product_result = mysqli_query($conn, $product_sql);
+    $product_stmt = mysqli_prepare(
+        $conn,
+        "SELECT * FROM products
+         WHERE id=?
+         AND approval_status='Approved'"
+    );
+    mysqli_stmt_bind_param($product_stmt, "i", $product_id);
+    mysqli_stmt_execute($product_stmt);
+    $product_result = mysqli_stmt_get_result($product_stmt);
     $product = mysqli_fetch_assoc($product_result);
 
     if(!$product){
@@ -32,22 +37,28 @@ elseif(isset($_GET['product_id'])){
 
     $seller_id = (int)$product['seller_id'];
 
-    $check_sql = "SELECT id FROM chats
-                  WHERE product_id='$product_id'
-                  AND buyer_id='$user_id'
-                  AND seller_id='$seller_id'";
-
-    $check_result = mysqli_query($conn, $check_sql);
+    $check_stmt = mysqli_prepare(
+        $conn,
+        "SELECT id FROM chats
+         WHERE product_id=?
+         AND buyer_id=?
+         AND seller_id=?"
+    );
+    mysqli_stmt_bind_param($check_stmt, "iii", $product_id, $user_id, $seller_id);
+    mysqli_stmt_execute($check_stmt);
+    $check_result = mysqli_stmt_get_result($check_stmt);
 
     if($check_result && mysqli_num_rows($check_result) > 0){
         $chat = mysqli_fetch_assoc($check_result);
         $chat_id = (int)$chat['id'];
     }else{
-        mysqli_query(
+        $insert_chat_stmt = mysqli_prepare(
             $conn,
             "INSERT INTO chats(product_id, buyer_id, seller_id)
-             VALUES('$product_id', '$user_id', '$seller_id')"
+             VALUES(?, ?, ?)"
         );
+        mysqli_stmt_bind_param($insert_chat_stmt, "iii", $product_id, $user_id, $seller_id);
+        mysqli_stmt_execute($insert_chat_stmt);
 
         $chat_id = mysqli_insert_id($conn);
     }
@@ -56,38 +67,48 @@ else{
     die("Chat Not Found");
 }
 
-$chat_sql = "SELECT chats.*, products.title, products.preview_image, products.image,
-             buyer.fullname AS buyer_name,
-             seller.fullname AS seller_name
-             FROM chats
-             JOIN products ON chats.product_id = products.id
-             JOIN users AS buyer ON chats.buyer_id = buyer.id
-             JOIN users AS seller ON chats.seller_id = seller.id
-             WHERE chats.id='$chat_id'
-             AND (chats.buyer_id='$user_id' OR chats.seller_id='$user_id')";
-
-$chat_result = mysqli_query($conn, $chat_sql);
+$chat_stmt = mysqli_prepare(
+    $conn,
+    "SELECT chats.*, products.title, products.preview_image, products.image,
+     buyer.fullname AS buyer_name,
+     seller.fullname AS seller_name
+     FROM chats
+     JOIN products ON chats.product_id = products.id
+     JOIN users AS buyer ON chats.buyer_id = buyer.id
+     JOIN users AS seller ON chats.seller_id = seller.id
+     WHERE chats.id=?
+     AND (chats.buyer_id=? OR chats.seller_id=?)"
+);
+mysqli_stmt_bind_param($chat_stmt, "iii", $chat_id, $user_id, $user_id);
+mysqli_stmt_execute($chat_stmt);
+$chat_result = mysqli_stmt_get_result($chat_stmt);
 $chat = mysqli_fetch_assoc($chat_result);
 
 if(!$chat){
     die("Chat Not Found");
 }
 
-mysqli_query(
+$read_stmt = mysqli_prepare(
     $conn,
     "UPDATE messages
      SET is_read=1
-     WHERE chat_id='$chat_id'
-     AND receiver_id='$user_id'"
+     WHERE chat_id=?
+     AND receiver_id=?"
 );
+mysqli_stmt_bind_param($read_stmt, "ii", $chat_id, $user_id);
+mysqli_stmt_execute($read_stmt);
 
-$messages_sql = "SELECT messages.*, users.fullname
-                 FROM messages
-                 JOIN users ON messages.sender_id = users.id
-                 WHERE messages.chat_id='$chat_id'
-                 ORDER BY messages.id ASC";
-
-$messages_result = mysqli_query($conn, $messages_sql);
+$messages_stmt = mysqli_prepare(
+    $conn,
+    "SELECT messages.*, users.fullname
+     FROM messages
+     JOIN users ON messages.sender_id = users.id
+     WHERE messages.chat_id=?
+     ORDER BY messages.id ASC"
+);
+mysqli_stmt_bind_param($messages_stmt, "i", $chat_id);
+mysqli_stmt_execute($messages_stmt);
+$messages_result = mysqli_stmt_get_result($messages_stmt);
 ?>
 
 <!DOCTYPE html>

@@ -9,32 +9,36 @@ if(!isset($_SESSION['user_id'])){
 
 $user_id = (int)$_SESSION['user_id'];
 
-$sql = "SELECT chats.*, products.title,
-        buyer.fullname AS buyer_name,
-        seller.fullname AS seller_name,
-        (
-            SELECT message
-            FROM messages
-            WHERE messages.chat_id = chats.id
-            ORDER BY messages.id DESC
-            LIMIT 1
-        ) AS last_message,
-        (
-            SELECT COUNT(*)
-            FROM messages
-            WHERE messages.chat_id = chats.id
-            AND messages.receiver_id = '$user_id'
-            AND messages.is_read = 0
-        ) AS unread_count
-        FROM chats
-        JOIN products ON chats.product_id = products.id
-        JOIN users AS buyer ON chats.buyer_id = buyer.id
-        JOIN users AS seller ON chats.seller_id = seller.id
-        WHERE chats.buyer_id='$user_id'
-        OR chats.seller_id='$user_id'
-        ORDER BY chats.id DESC";
-
-$result = mysqli_query($conn, $sql);
+$stmt = mysqli_prepare(
+    $conn,
+    "SELECT chats.*, products.title,
+     buyer.fullname AS buyer_name,
+     seller.fullname AS seller_name,
+     (
+         SELECT message
+         FROM messages
+         WHERE messages.chat_id = chats.id
+         ORDER BY messages.id DESC
+         LIMIT 1
+     ) AS last_message,
+     (
+         SELECT COUNT(*)
+         FROM messages
+         WHERE messages.chat_id = chats.id
+         AND messages.receiver_id = ?
+         AND messages.is_read = 0
+     ) AS unread_count
+     FROM chats
+     JOIN products ON chats.product_id = products.id
+     JOIN users AS buyer ON chats.buyer_id = buyer.id
+     JOIN users AS seller ON chats.seller_id = seller.id
+     WHERE chats.buyer_id=?
+     OR chats.seller_id=?
+     ORDER BY chats.id DESC"
+);
+mysqli_stmt_bind_param($stmt, "iii", $user_id, $user_id, $user_id);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
 ?>
 
 <!DOCTYPE html>

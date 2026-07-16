@@ -13,16 +13,21 @@ $uploadDir = "uploads/";
 $serverUploadDir = __DIR__ . "/uploads/";
 
 if(isset($_POST['update_profile'])){
-    $fullname = mysqli_real_escape_string($conn, trim($_POST['fullname']));
-    $roll_number = mysqli_real_escape_string($conn, trim($_POST['roll_number']));
-    $semester = mysqli_real_escape_string($conn, trim($_POST['semester']));
-    $course = mysqli_real_escape_string($conn, trim($_POST['course']));
-    $college_name = mysqli_real_escape_string($conn, trim($_POST['college_name']));
+    $fullname = trim($_POST['fullname']);
+    $roll_number = trim($_POST['roll_number']);
+    $semester = trim($_POST['semester']);
+    $course = trim($_POST['course']);
+    $college_name = trim($_POST['college_name']);
 
-    $current_sql = "SELECT profile_photo, college_id_card, verification_status
-                    FROM users
-                    WHERE id='$user_id'";
-    $current_result = mysqli_query($conn, $current_sql);
+    $current_stmt = mysqli_prepare(
+        $conn,
+        "SELECT profile_photo, college_id_card, verification_status
+         FROM users
+         WHERE id=?"
+    );
+    mysqli_stmt_bind_param($current_stmt, "i", $user_id);
+    mysqli_stmt_execute($current_stmt);
+    $current_result = mysqli_stmt_get_result($current_stmt);
     $current_user = mysqli_fetch_assoc($current_result);
 
     $profile_photo = $current_user['profile_photo'];
@@ -53,39 +58,57 @@ if(isset($_POST['update_profile'])){
         $verification_status = "Pending";
     }
 
-    $profile_photo = mysqli_real_escape_string($conn, $profile_photo);
-    $college_id_card = mysqli_real_escape_string($conn, $college_id_card);
-    $verification_status = mysqli_real_escape_string($conn, $verification_status);
+    $update_stmt = mysqli_prepare(
+        $conn,
+        "UPDATE users
+         SET
+         fullname=?,
+         profile_photo=?,
+         roll_number=?,
+         semester=?,
+         course=?,
+         college_name=?,
+         college_id_card=?,
+         verification_status=?
+         WHERE id=?"
+    );
+    mysqli_stmt_bind_param(
+        $update_stmt,
+        "ssssssssi",
+        $fullname,
+        $profile_photo,
+        $roll_number,
+        $semester,
+        $course,
+        $college_name,
+        $college_id_card,
+        $verification_status,
+        $user_id
+    );
 
-    $update_sql = "UPDATE users
-                   SET
-                   fullname='$fullname',
-                   profile_photo='$profile_photo',
-                   roll_number='$roll_number',
-                   semester='$semester',
-                   course='$course',
-                   college_name='$college_name',
-                   college_id_card='$college_id_card',
-                   verification_status='$verification_status'
-                   WHERE id='$user_id'";
-
-    if(mysqli_query($conn, $update_sql)){
+    if(mysqli_stmt_execute($update_stmt)){
         $_SESSION['fullname'] = $fullname;
         $message = "Profile updated successfully.";
     }else{
-        $message = "Profile update failed: " . mysqli_error($conn);
+        $message = "Profile update failed: " . mysqli_stmt_error($update_stmt);
     }
 }
 
-$user_sql = "SELECT * FROM users WHERE id='$user_id'";
-$user_result = mysqli_query($conn, $user_sql);
+$user_stmt = mysqli_prepare($conn, "SELECT * FROM users WHERE id=?");
+mysqli_stmt_bind_param($user_stmt, "i", $user_id);
+mysqli_stmt_execute($user_stmt);
+$user_result = mysqli_stmt_get_result($user_stmt);
 $user = mysqli_fetch_assoc($user_result);
 
-$product_sql = "SELECT COUNT(*) AS total_products
-                FROM products
-                WHERE seller_id='$user_id'";
-
-$product_result = mysqli_query($conn, $product_sql);
+$product_stmt = mysqli_prepare(
+    $conn,
+    "SELECT COUNT(*) AS total_products
+     FROM products
+     WHERE seller_id=?"
+);
+mysqli_stmt_bind_param($product_stmt, "i", $user_id);
+mysqli_stmt_execute($product_stmt);
+$product_result = mysqli_stmt_get_result($product_stmt);
 $product_count = mysqli_fetch_assoc($product_result);
 
 $verificationClass = "not-submitted";

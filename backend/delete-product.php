@@ -11,14 +11,18 @@ if(!isset($_GET['id'])){
     die("Invalid Product");
 }
 
-$id = $_GET['id'];
-$user_id = $_SESSION['user_id'];
+$id = (int)$_GET['id'];
+$user_id = (int)$_SESSION['user_id'];
 
-$sql = "DELETE FROM products
-        WHERE id='$id'
-        AND seller_id='$user_id'";
+$stmt = mysqli_prepare(
+    $conn,
+    "DELETE FROM products
+     WHERE id=?
+     AND seller_id=?"
+);
+mysqli_stmt_bind_param($stmt, "ii", $id, $user_id);
 
-if(mysqli_query($conn,$sql)){
+if(mysqli_stmt_execute($stmt)){
     header("Location: ../frontend/my-products.php");
     exit();
 }else{

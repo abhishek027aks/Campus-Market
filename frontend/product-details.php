@@ -8,24 +8,24 @@ if(!isset($_GET['id'])){
 
 $id = (int)$_GET['id'];
 
-$visibility = "products.approval_status='Approved'";
+$viewer_id = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
+$is_admin = isset($_SESSION['admin_id']) ? 1 : 0;
 
-if(isset($_SESSION['user_id'])){
-    $viewer_id = (int)$_SESSION['user_id'];
-    $visibility .= " OR products.seller_id='$viewer_id'";
-}
-
-if(isset($_SESSION['admin_id'])){
-    $visibility .= " OR 1=1";
-}
-
-$sql = "SELECT products.*, users.fullname, users.email, users.verification_status
-        FROM products
-        JOIN users ON products.seller_id = users.id
-        WHERE products.id = $id
-        AND ($visibility)";
-
-$result = mysqli_query($conn,$sql);
+$stmt = mysqli_prepare(
+    $conn,
+    "SELECT products.*, users.fullname, users.email, users.verification_status
+     FROM products
+     JOIN users ON products.seller_id = users.id
+     WHERE products.id = ?
+     AND (
+        products.approval_status='Approved'
+        OR products.seller_id=?
+        OR ?=1
+     )"
+);
+mysqli_stmt_bind_param($stmt, "iii", $id, $viewer_id, $is_admin);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
 $product = mysqli_fetch_assoc($result);
 
 if(!$product){
@@ -33,10 +33,12 @@ if(!$product){
 }
 
 if($product['approval_status'] == "Approved"){
-    mysqli_query(
+    $views_stmt = mysqli_prepare(
         $conn,
-        "UPDATE products SET views = views + 1 WHERE id = $id"
+        "UPDATE products SET views = views + 1 WHERE id = ?"
     );
+    mysqli_stmt_bind_param($views_stmt, "i", $id);
+    mysqli_stmt_execute($views_stmt);
 }
 
 $fileType = strtolower($product['file_type']);
@@ -46,30 +48,43 @@ $isWishlisted = false;
 
 if(isset($_SESSION['user_id'])){
     $user_id = (int)$_SESSION['user_id'];
-    $wishlist_sql = "SELECT id FROM wishlist
-                     WHERE user_id='$user_id'
-                     AND product_id='$id'";
-    $wishlist_result = mysqli_query($conn, $wishlist_sql);
+    $wishlist_stmt = mysqli_prepare(
+        $conn,
+        "SELECT id FROM wishlist
+         WHERE user_id=?
+         AND product_id=?"
+    );
+    mysqli_stmt_bind_param($wishlist_stmt, "ii", $user_id, $id);
+    mysqli_stmt_execute($wishlist_stmt);
+    $wishlist_result = mysqli_stmt_get_result($wishlist_stmt);
     $isWishlisted = $wishlist_result && mysqli_num_rows($wishlist_result) > 0;
 }
 
-$review_stats_sql = "SELECT
-                     COUNT(*) AS total_reviews,
-                     COALESCE(AVG(rating), 0) AS average_rating
-                     FROM product_reviews
-                     WHERE product_id='$id'";
-
-$review_stats = mysqli_fetch_assoc(mysqli_query($conn, $review_stats_sql));
+$review_stats_stmt = mysqli_prepare(
+    $conn,
+    "SELECT
+     COUNT(*) AS total_reviews,
+     COALESCE(AVG(rating), 0) AS average_rating
+     FROM product_reviews
+     WHERE product_id=?"
+);
+mysqli_stmt_bind_param($review_stats_stmt, "i", $id);
+mysqli_stmt_execute($review_stats_stmt);
+$review_stats = mysqli_fetch_assoc(mysqli_stmt_get_result($review_stats_stmt));
 $averageRating = round((float)$review_stats['average_rating'], 1);
 $totalReviews = (int)$review_stats['total_reviews'];
 
-$reviews_sql = "SELECT product_reviews.*, users.fullname
-                FROM product_reviews
-                JOIN users ON product_reviews.user_id = users.id
-                WHERE product_reviews.product_id='$id'
-                ORDER BY product_reviews.id DESC";
-
-$reviews_result = mysqli_query($conn, $reviews_sql);
+$reviews_stmt = mysqli_prepare(
+    $conn,
+    "SELECT product_reviews.*, users.fullname
+     FROM product_reviews
+     JOIN users ON product_reviews.user_id = users.id
+     WHERE product_reviews.product_id=?
+     ORDER BY product_reviews.id DESC"
+);
+mysqli_stmt_bind_param($reviews_stmt, "i", $id);
+mysqli_stmt_execute($reviews_stmt);
+$reviews_result = mysqli_stmt_get_result($reviews_stmt);
 ?>
 
 <!DOCTYPE html>

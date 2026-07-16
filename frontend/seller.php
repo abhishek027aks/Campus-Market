@@ -7,28 +7,38 @@ if(!isset($_GET['id'])){
 
 $seller_id = (int)$_GET['id'];
 
-$seller_sql = "SELECT * FROM users WHERE id='$seller_id'";
-$seller_result = mysqli_query($conn, $seller_sql);
+$seller_stmt = mysqli_prepare($conn, "SELECT * FROM users WHERE id=?");
+mysqli_stmt_bind_param($seller_stmt, "i", $seller_id);
+mysqli_stmt_execute($seller_stmt);
+$seller_result = mysqli_stmt_get_result($seller_stmt);
 $seller = mysqli_fetch_assoc($seller_result);
 
 if(!$seller){
     die("Seller Not Found");
 }
 
-$product_sql = "SELECT * FROM products
-                WHERE seller_id='$seller_id'
-                AND approval_status='Approved'
-                ORDER BY id DESC";
+$product_stmt = mysqli_prepare(
+    $conn,
+    "SELECT * FROM products
+     WHERE seller_id=?
+     AND approval_status='Approved'
+     ORDER BY id DESC"
+);
+mysqli_stmt_bind_param($product_stmt, "i", $seller_id);
+mysqli_stmt_execute($product_stmt);
+$product_result = mysqli_stmt_get_result($product_stmt);
 
-$product_result = mysqli_query($conn, $product_sql);
-
-$stats_sql = "SELECT COUNT(*) AS total_products,
-              COALESCE(SUM(views), 0) AS total_views
-              FROM products
-              WHERE seller_id='$seller_id'
-              AND approval_status='Approved'";
-
-$stats = mysqli_fetch_assoc(mysqli_query($conn, $stats_sql));
+$stats_stmt = mysqli_prepare(
+    $conn,
+    "SELECT COUNT(*) AS total_products,
+     COALESCE(SUM(views), 0) AS total_views
+     FROM products
+     WHERE seller_id=?
+     AND approval_status='Approved'"
+);
+mysqli_stmt_bind_param($stats_stmt, "i", $seller_id);
+mysqli_stmt_execute($stats_stmt);
+$stats = mysqli_fetch_assoc(mysqli_stmt_get_result($stats_stmt));
 $isVerified = $seller['verification_status'] == "Approved";
 ?>
 

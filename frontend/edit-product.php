@@ -14,11 +14,15 @@ if(!isset($_GET['id'])){
 $id = (int)$_GET['id'];
 $user_id = (int)$_SESSION['user_id'];
 
-$sql = "SELECT * FROM products
-        WHERE id='$id'
-        AND seller_id='$user_id'";
-
-$result = mysqli_query($conn, $sql);
+$stmt = mysqli_prepare(
+    $conn,
+    "SELECT * FROM products
+     WHERE id=?
+     AND seller_id=?"
+);
+mysqli_stmt_bind_param($stmt, "ii", $id, $user_id);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
 
 if(!$result){
     die("Query Error: " . mysqli_error($conn));
